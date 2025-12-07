@@ -25,11 +25,19 @@ const ctx = canvas.getContext("2d")!;
 const image = new Image();
 const rooms = new Image();
 const asm = new AssetManager(ctx, image, rooms);
-image.addEventListener("load", () => {
-  asm.drawBoard();
-});
-rooms.addEventListener("load", () => {
-  asm.drawBoard();
-});
-image.src = "/assets.png";
-rooms.src = "/rooms.png";
+
+const loadingRooms = new Promise((resolve) => {
+  rooms.addEventListener("load", () => {
+    resolve(null);
+  });
+  rooms.src = "/rooms.png";
+})
+const loadingAssets = new Promise((resolve) => {
+  image.addEventListener("load", () => {
+    resolve(null);
+  });
+  image.src = "/assets.png";
+})
+
+
+Promise.all([loadingRooms, loadingAssets]).then(() => asm.drawBoard());
