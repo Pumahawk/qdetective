@@ -1,3 +1,26 @@
+import { useEffect, useState } from 'react';
+import './App.css'
+
+type AppScene = "menu" | "game";
+interface GameState {
+}
+
+function App() {
+  const [scene, setScene] = useState<AppScene>("menu")
+  const [gameState, setGameState] = useState<GameState>(null);
+  return (
+    <div>
+      { scene == "menu"
+        ? <MenuScene />
+        : <GameScene />
+      }
+      { scene == "menu" ? <div><button onClick={() => setScene("game")}>to game...</button></div> : null }
+    </div>
+  )
+}
+
+export default App
+//
 // x = corridoio
 // S = stanza
 
@@ -82,72 +105,100 @@ function mapBorder(k: string): string {
 function getRowStyleByState(item: Item) {
   switch (item.status % 4) {
     case 0:
-      return "background-color: #d4edda; color: #155724;";  // verde chiaro
+      return "#d4edda; color: #155724;";  // verde chiaro
     case 1:
-      return "background-color: #fff3cd; color: #856404;";  // giallo chiaro
+      return "#fff3cd; color: #856404;";  // giallo chiaro
     case 2:
-      return "background-color: #f8d7da; color: #721c24;";  // rosso chiaro
+      return "#f8d7da; color: #721c24;";  // rosso chiaro
     default:
       return "";
   }
 }
 
-export class ItemsComponent extends HTMLElement {
-  static name = 'my-items';
+const size = "20px";
 
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
+export function BoardComponent() {
+  return (
+<table style={{borderCollapse: "collapse"}}>
+      <tbody>
+      { map.map((row, i) => <tr key={i}>{ row.map((cell, j) => <td key={i * 100 + j} style={{
+        width: size,
+        height: size,
+        padding: "0px",
+        textAlign: "center",
+        verticalAlign: "middle",
+        border: mapBorder(cell),
+        background: mapColor(cell),
+}}></td>) }</tr>) }
+      </tbody>
+</table>
+  )
+}
 
-  connectedCallback() {
-    this.style.flexGrow = "1";
-    const wrapper = document.createElement("div");
-    wrapper.className = "items-wrapper";
+export function ItemsComponent() {
+  return (
+    <div className='items-wrapper'>
+      <table className='items-table'>
+        <tbody>
+          { items.map(item => (<tr key={item.id} style={{backgroundColor: getRowStyleByState(item)}}>
+            <td>{item.name}</td>
+          </tr>))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
-    const table = document.createElement("table");
-    table.className = "items-table";
+interface ServerState {
+  id: string
+}
 
-    items.forEach(item => {
-      const tr = document.createElement("tr");
-      tr.setAttribute("style", getRowStyleByState(item));
+const mockState: ServerState[] = [
+  { id: "game1" },
+  { id: "game2" },
+]
 
-      const td = document.createElement("td");
-      td.textContent = item.name;
-
-      tr.appendChild(td);
-      table.appendChild(tr);
-    });
-
-    wrapper.appendChild(table);
-
-    const style = document.createElement("style");
-    style.textContent = `
-      .items-wrapper {
-        padding: 10px;
-        font-family: Arial, sans-serif;
+export function MenuScene() {
+  const [load, setLoad] = useState(true);
+  const [state, setState] = useState<ServerState[]>([]);
+  useEffect(() => {
+    setTimeout(() => {
+      setLoad(false)
+      setState(mockState)
+    }, 500);
+  });
+  return (
+  <div>
+      { load
+        ? <LoadComponent/>
+        : (
+          <div>
+            { state.map(s => <div key={s.id}>{s.id}</div>) }
+          </div>
+        )
       }
+  </div>
+  )
+}
 
-      .items-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
+export function GameScene() {
+return (
+  <div>
+    <BoardComponent />
+    <ItemsComponent />
+  </div>
+)
+}
+export function ServerStatesPage() {
+  return (
+  <div>
+      serrver state page
+  </div>
+  )
+}
 
-      .items-table tr {
-        transition: background 0.2s ease;
-      }
-
-      .items-table tr:hover {
-        filter: brightness(1.1);
-        cursor: pointer;
-      }
-
-      .items-table td {
-        padding: 2px 6px;
-        border-bottom: 1px solid #ccc;
-      }
-    `;
-
-    this.shadowRoot.replaceChildren(style, wrapper);
-  }
+export function LoadComponent() {
+  return (
+    <div>loading...</div>
+  )
 }
