@@ -1,11 +1,14 @@
 type ItemStatus = "" | "";
+
 interface ItemState {
   id: string;
   label: string;
   status: ItemStatus;
 }
 export class ItemsViewComponent extends HTMLElement {
-  static name = "items-component";
+  static define(registry: CustomElementRegistry): void {
+    registry.define("items-component", ItemsViewComponent);
+  }
 
   constructor() {
     super();
