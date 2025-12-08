@@ -39,5 +39,14 @@ boardComponent?.addEventListener(
     console.log(
       `Block cliccked [${x}, ${y}]`,
     );
+    console.log("selected: ", boardModel.selection);
+    if (
+      !boardModel.selection.find((s) =>
+        s.position[0] == x && s.position[1] == y
+      )
+    ) {
+      boardModel.selection.push({ position: [x, y] });
+    }
+    boardComponent.updateModel(boardModel);
   },
 );

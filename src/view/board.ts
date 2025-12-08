@@ -31,6 +31,7 @@ export class BoardViewComponent extends HTMLElement {
   ctx: CanvasRenderingContext2D;
 
   model?: BoardModel;
+  assetManager?: AssetManager;
 
   static define(ce: CustomElementRegistry) {
     ce.define("board-component", BoardViewComponent);
@@ -38,6 +39,7 @@ export class BoardViewComponent extends HTMLElement {
 
   updateModel(model: BoardModel) {
     this.model = model;
+    this.draw();
   }
 
   constructor() {
@@ -67,11 +69,20 @@ export class BoardViewComponent extends HTMLElement {
     const rooms = new Image();
     rooms.src = "/rooms.png";
 
-    const asm = new AssetManager(this.ctx, assets, rooms);
+    this.assetManager = new AssetManager(this.ctx, assets, rooms);
 
     await Promise.all([assets.decode(), rooms.decode()]);
 
-    asm.drawBoard();
+    this.draw();
+  }
+
+  private draw() {
+    if (this.assetManager) {
+      this.assetManager.drawBoard();
+      this.model?.selection.forEach((s) =>
+        this.assetManager!.selectBlock(s.position[0], s.position[1])
+      );
+    }
   }
 
   private dispatchBlockClick(x: number, y: number) {
@@ -153,9 +164,12 @@ const assetsXY = {
 };
 
 class AssetManager {
+  blockSize = 16;
+
   ctx: CanvasRenderingContext2D;
   imageAssets: HTMLImageElement;
   imageRooms: HTMLImageElement;
+
   constructor(
     ctx: CanvasRenderingContext2D,
     imageAssets: HTMLImageElement,
@@ -168,34 +182,36 @@ class AssetManager {
 
   drawAsset(asset: AssetXY, x: number, y: number) {
     const [px, py, scale] = asset;
-    const bs = 16;
     if (scale) {
       this.ctx.save();
-      this.ctx.translate(x * bs + bs / 2, y * bs + bs / 2);
+      this.ctx.translate(
+        x * this.blockSize + this.blockSize / 2,
+        y * this.blockSize + this.blockSize / 2,
+      );
       this.ctx.scale(scale[0], scale[1]);
       this.ctx.drawImage(
         this.imageAssets,
-        px * bs,
-        py * bs,
-        bs,
-        bs,
-        -bs / 2,
-        -bs / 2,
-        bs,
-        bs,
+        px * this.blockSize,
+        py * this.blockSize,
+        this.blockSize,
+        this.blockSize,
+        -this.blockSize / 2,
+        -this.blockSize / 2,
+        this.blockSize,
+        this.blockSize,
       );
       this.ctx.restore();
     } else {
       this.ctx.drawImage(
         this.imageAssets,
-        px * bs,
-        py * bs,
-        bs,
-        bs,
-        x * bs,
-        y * bs,
-        bs,
-        bs,
+        px * this.blockSize,
+        py * this.blockSize,
+        this.blockSize,
+        this.blockSize,
+        x * this.blockSize,
+        y * this.blockSize,
+        this.blockSize,
+        this.blockSize,
       );
     }
   }
@@ -260,5 +276,17 @@ class AssetManager {
       cdx,
       cdy,
     );
+  }
+
+  selectBlock(x: number, y: number) {
+    this.ctx.beginPath();
+    this.ctx.rect(
+      x * this.blockSize,
+      y * this.blockSize,
+      this.blockSize,
+      this.blockSize,
+    );
+    this.ctx.fillStyle = "rgba(247, 169, 95, 0.6)";
+    this.ctx.fill();
   }
 }
