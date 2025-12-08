@@ -22,7 +22,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 const boardModel: BoardModel = {
-  players: [{ id: "p1", position: [10, 10], asset: "red" }],
+  players: [{ id: "p1", position: [10, 10], asset: 0 }],
   selection: [],
 };
 const boardComponent = document.querySelector<BoardViewComponent>(
@@ -47,6 +47,7 @@ boardComponent?.addEventListener(
     ) {
       boardModel.selection.push({ position: [x, y] });
     }
+    boardModel.players = [{ id: "red", asset: 1, position: [x, y] }];
     boardComponent.updateModel(boardModel);
   },
 );

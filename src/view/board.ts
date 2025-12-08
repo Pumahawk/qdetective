@@ -12,10 +12,8 @@ export interface BlockBoardSelection {
 export interface PlayerBoardModel {
   id: string;
   position: [number, number];
-  asset: BoardPlayerAssetEnum;
+  asset: number;
 }
-
-export type BoardPlayerAssetEnum = "red";
 
 export interface ClickedBoardEvent {
   position: [number, number];
@@ -68,6 +66,7 @@ export class BoardViewComponent extends HTMLElement {
     this.assetManager = new AssetManager(this.ctx, {
       assets: assetLoader.load("/assets.png"),
       rooms: assetLoader.load("/rooms.png"),
+      players: assetLoader.load("/players.png"),
     });
 
     await Promise.all(assetLoader.getImages().map((img) => img.decode()));
@@ -78,9 +77,16 @@ export class BoardViewComponent extends HTMLElement {
   private draw() {
     if (this.assetManager) {
       this.assetManager.drawBoard();
-      this.model?.selection.forEach((s) =>
-        this.assetManager!.selectBlock(s.position[0], s.position[1])
-      );
+      if (this.model) {
+        for (const selectedBlock of this.model.selection) {
+          const [x, y] = selectedBlock.position;
+          this.assetManager.selectBlock(x, y);
+        }
+        for (const player of this.model.players) {
+          const [x, y] = player.position;
+          this.assetManager.drawPlayer(player.asset, x, y);
+        }
+      }
     }
   }
 
@@ -165,6 +171,7 @@ const assetsXY = {
 interface DefinedAssets {
   assets: HTMLImageElement;
   rooms: HTMLImageElement;
+  players: HTMLImageElement;
 }
 class AssetManager {
   blockSize = 16;
@@ -287,6 +294,22 @@ class AssetManager {
       this.blockSize,
     );
     this.ctx.fillStyle = "rgba(247, 169, 95, 0.6)";
+    this.ctx.fill();
+  }
+
+  drawPlayer(n: number, x: number, y: number) {
+    this.ctx.beginPath();
+    this.ctx.drawImage(
+      this.assets.players,
+      n % 3 * 48 / 3,
+      Math.floor(n / 3) * 48 / 3,
+      48 / 3,
+      48 / 3,
+      x * this.blockSize,
+      y * this.blockSize,
+      this.blockSize,
+      this.blockSize,
+    );
     this.ctx.fill();
   }
 }
