@@ -64,14 +64,13 @@ export class BoardViewComponent extends HTMLElement {
   }
 
   async connectedCallback() {
-    const assets = new Image();
-    assets.src = "/assets.png";
-    const rooms = new Image();
-    rooms.src = "/rooms.png";
+    const assetLoader = new AssetLoader();
+    this.assetManager = new AssetManager(this.ctx, {
+      assets: assetLoader.load("/assets.png"),
+      rooms: assetLoader.load("/rooms.png"),
+    });
 
-    this.assetManager = new AssetManager(this.ctx, assets, rooms);
-
-    await Promise.all([assets.decode(), rooms.decode()]);
+    await Promise.all(assetLoader.getImages().map((img) => img.decode()));
 
     this.draw();
   }
@@ -163,21 +162,22 @@ const assetsXY = {
   wallE: [9, 9, [-1, 1]] as AssetXY,
 };
 
+interface DefinedAssets {
+  assets: HTMLImageElement;
+  rooms: HTMLImageElement;
+}
 class AssetManager {
   blockSize = 16;
 
+  assets: DefinedAssets;
   ctx: CanvasRenderingContext2D;
-  imageAssets: HTMLImageElement;
-  imageRooms: HTMLImageElement;
 
   constructor(
     ctx: CanvasRenderingContext2D,
-    imageAssets: HTMLImageElement,
-    imageRooms: HTMLImageElement,
+    assets: DefinedAssets,
   ) {
     this.ctx = ctx;
-    this.imageAssets = imageAssets;
-    this.imageRooms = imageRooms;
+    this.assets = assets;
   }
 
   drawAsset(asset: AssetXY, x: number, y: number) {
@@ -190,7 +190,7 @@ class AssetManager {
       );
       this.ctx.scale(scale[0], scale[1]);
       this.ctx.drawImage(
-        this.imageAssets,
+        this.assets.assets,
         px * this.blockSize,
         py * this.blockSize,
         this.blockSize,
@@ -203,7 +203,7 @@ class AssetManager {
       this.ctx.restore();
     } else {
       this.ctx.drawImage(
-        this.imageAssets,
+        this.assets.assets,
         px * this.blockSize,
         py * this.blockSize,
         this.blockSize,
@@ -266,7 +266,7 @@ class AssetManager {
     const [x, y] = room.size;
     const [cx, cy, cdx, cdy] = coordinates;
     this.ctx.drawImage(
-      this.imageRooms,
+      this.assets.rooms,
       positionX,
       positionY,
       x,
@@ -288,5 +288,25 @@ class AssetManager {
     );
     this.ctx.fillStyle = "rgba(247, 169, 95, 0.6)";
     this.ctx.fill();
+  }
+}
+
+class AssetLoader {
+  private images: { [path: string]: HTMLImageElement } = {};
+
+  load(path: string): HTMLImageElement {
+    const stored = this.images[path];
+    if (stored) {
+      return stored;
+    } else {
+      const image = new Image();
+      image.src = path;
+      this.images[path] = image;
+      return image;
+    }
+  }
+
+  getImages(): HTMLImageElement[] {
+    return Object.values(this.images);
   }
 }
