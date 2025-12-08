@@ -1,42 +1,56 @@
-export function getMap() {
-  return [
-    [ "MNW","MN","MN","MN","MN","MN","MN","MN","w","MN","MN","MN","MN","MN","MN","g","MN","MN","MN","MN","MN","MN","MN","MN","MNE" ],
-    [ "ML"," "," "," "," "," "," ","x","x"," "," "," "," "," "," ","x","x","x"," "," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," ","x","x"," "," "," "," "," "," "," "," "," ","x","x"," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," ","x","x"," "," "," "," "," "," "," "," "," ","x","x"," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," ","x","x"," "," "," "," "," "," "," "," "," ","x","x"," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," ","x","x","S"," "," "," "," "," "," "," ","S","x","x","x","S"," "," "," ","ME" ],
-    [ "ML"," "," "," "," ","S","x","x"," ","S"," "," "," "," "," ","S"," ","x","x","x"," "," "," ","x","b" ],
-    [ "x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","ME" ],
-    [ "ML","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"," "," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," ","x","x","x","x","x"," "," "," "," "," ","x","x","x","S"," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," "," "," ","x","x","S"," "," "," ","S","x","x","x"," "," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," "," "," ","x","x"," "," "," "," "," ","x","x","x"," "," "," "," "," ","S","ME" ],
-    [ "ML"," "," "," "," "," "," ","S","x","x"," "," "," "," "," ","x","x","x","x","x","x","x","x","x","ME" ],
-    [ "ML"," "," "," "," "," "," "," ","x","x"," "," "," "," "," ","x","x","x"," "," "," ","S"," "," ","ME" ],
-    [ "ML"," "," "," "," "," "," "," ","x","x","S"," "," "," ","S","x","x"," "," "," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," ","S"," ","x","x"," "," "," "," "," ","x","x","S"," "," "," "," "," "," ","ME" ],
-    [ "ML","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"," "," "," "," "," "," "," ","ME" ],
-    [ "x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x","x"," "," "," "," "," "," ","ME" ],
-    [ "ML","x","x","x","x","x","x","x","x"," "," ","S","S","S"," "," ","x","x","x","x","x","x","x","x","v" ],
-    [ "ML"," "," "," "," "," ","S","x","x"," "," "," "," "," "," ","S","x","x","x","x","x","x","x","x","ME" ],
-    [ "ML"," "," "," "," "," "," ","x","x"," "," "," "," "," "," "," ","x","x","S"," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," "," ","x","x"," "," "," "," "," "," "," ","x","x"," "," "," "," "," "," ","ME" ],
-    [ "ML"," "," "," "," "," "," ","x","x"," "," "," "," "," "," "," ","x","x"," "," "," "," "," "," ","ME" ],
-    [ "ML" ," "," "," "," "," "," ","x","x"," "," "," "," "," "," "," ","x","x"," "," "," "," "," "," ","ME" ],
-    [ "MSW","MS","MS","MS","MS","MS","MS","r","MS","MS","MS","MS","MS","MS","MS","MS","MS","xS","MS","MS","MS","MS","MS","MS","MSE" ]
-  ];
+import { getMap } from "./map.ts";
+
+export class BoardViewComponent extends HTMLElement {
+  static name = "board-component";
+
+  blockSize = 16;
+  boardSizeX = 25 * this.blockSize;
+  boardSizeY = 25 * this.blockSize;
+
+  shadow: ShadowRoot;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+
+  constructor() {
+    super();
+
+    this.shadow = this.attachShadow({mode: "open"});
+
+    this.canvas = document.createElement("canvas") as HTMLCanvasElement;;
+    this.canvas.width = this.boardSizeX;
+    this.canvas.height = this.boardSizeY;
+    this.canvas.style.width = "1000px";
+    this.canvas.style.height = "1000px";
+    this.canvas.style.imageRendering = "pixelated";
+
+    this.ctx = this.canvas.getContext("2d")!;
+
+    this.shadow.appendChild(this.canvas);
+  }
+
+  async connectedCallback() {
+    const assets = new Image();
+    assets.src = "/assets.png";
+    const rooms = new Image();
+    rooms.src = "/rooms.png";
+
+    const asm = new AssetManager(this.ctx, assets, rooms);
+
+    await Promise.all([assets.decode(), rooms.decode()]);
+
+    asm.drawBoard();
+  }
 }
 
-export type AssetXY = [number, number, [number, number]?];
-export interface RoomC {
+type AssetXY = [number, number, [number, number]?];
+interface RoomC {
   position: [number, number]
   size: [number, number]
 }
 
 
 const roomSize = 330;
-export const roomXY = {
+const roomXY = {
   kitchen: {position: [330 * 0, 330 * 0], size: [330, 330]} as RoomC,
   biblio: {position: [330 * 1, 330 * 0], size: [330, 330]} as RoomC,
   salaPranzo: {position: [330 * 2, 330 * 0], size: [330, 330]} as RoomC,
@@ -52,12 +66,12 @@ export const roomXY = {
   swpool: {position: [330 * 0, 330 * 3], size: [330, 330]} as RoomC,
 }
 
-export interface RoomPS {
+interface RoomPS {
   room: RoomC
   position: [number, number, number, number]
 }
 
-export const rooms: RoomPS[] = [
+const rooms: RoomPS[] = [
   {room: roomXY.kitchen, position: [16 * 1, 16 * 1, 16 * 6, 16 * 6]},
   {room: roomXY.biblio, position: [16 * 9, 16 * 18, 16 * 7, 16 * 6]},
   {room: roomXY.salaPranzo, position: [16 * 1, 16 * 9, 16 * 7, 16 * 7]},
@@ -70,7 +84,7 @@ export const rooms: RoomPS[] = [
   {room: roomXY.swpool, position: [16 * 9, 16 * 8, 16 * 7, 16 * 8]},
 ];
 
-export const assetsXY = {
+const assetsXY = {
   floor: [3, 5] as AssetXY,
   door: [5, 4] as AssetXY,
   wallW: [9, 9] as AssetXY,
@@ -83,7 +97,7 @@ export const assetsXY = {
   wallE: [9, 9, [-1, 1]] as AssetXY,
 }
 
-export class AssetManager {
+class AssetManager {
   ctx: CanvasRenderingContext2D
   imageAssets: HTMLImageElement
   imageRooms: HTMLImageElement
