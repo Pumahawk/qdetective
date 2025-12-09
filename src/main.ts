@@ -54,10 +54,9 @@ boardComponent?.addEventListener(
   (event) => {
     const pos = (event as CustomEvent<ClickedBoardEvent>).detail.position;
     const [x, y] = pos;
-    console.log(
-      `Block cliccked [${x}, ${y}]`,
-    );
-    console.log("selected: ", boardModel.selection);
+    if (map[y][x] != "x" && map[y][x] != "S") {
+      return;
+    }
     if (
       !boardModel.selection.find((s) =>
         s.position[0] == x && s.position[1] == y

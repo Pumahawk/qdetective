@@ -262,12 +262,9 @@ class AssetManager {
           case "S":
             this.drawAsset(assetsXY.door, j, i);
             break;
-          default:
+          case "x":
             this.drawAsset(assetsXY.floor, j, i);
             break;
-        }
-        if (cell == "x") {
-          this.drawAsset(assetsXY.floor, j, i);
         }
       })
     );
