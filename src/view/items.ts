@@ -1,70 +1,56 @@
-export class ItemsViewComponent extends HTMLElement {
-  static define(registry: CustomElementRegistry): void {
-    registry.define("items-component", ItemsViewComponent);
-  }
+export interface ItemInfo {
+  label: string;
+}
 
-  constructor() {
-    super();
+export interface PlayerInfo {
+  label: string;
+}
 
-    const players = [
-      "pl1",
-      "pl2",
-      "pl3",
-      "pl4",
-    ];
+export interface ItemsViewModel {
+  players: PlayerInfo[];
+  people: ItemInfo[];
+  objects: ItemInfo[];
+  rooms: ItemInfo[];
+}
 
-    const people = [
-      "Miss Scarlet",
-      "Professor Plum",
-      "Colonnello Mustard",
-      "Dottor Green",
-      "Signora Bianchi",
-      "Signora Peacock",
-    ];
+export class ItemsViewComponent {
+  model: ItemsViewModel;
+  element: Element;
 
-    const objects = [
-      "corda",
-      "tubo di piombo",
-      "pugnale",
-      "chiave inglese",
-      "candeliere",
-      "rivoltella",
-    ];
+  constructor(element: Element, model: ItemsViewModel) {
+    this.element = element;
+    this.model = model;
 
-    const rooms = [
-      "Cucina",
-      "Sala da ballo",
-      "Serra",
-      "Sala da pranzo",
-      "Sala da biliardo",
-      "Biblioteca",
-      "Veranda",
-      "Anticamera",
-      "Studio",
-    ];
-
-    const peopleUl = createList("people", people, players);
-    const objectsUl = createList("objects", objects, players);
-    const roomsUl = createList("rooms", rooms, players);
-    this.replaceChildren(peopleUl, objectsUl, roomsUl);
+    const peopleUl = createList(
+      "people",
+      this.model.players,
+      this.model.players,
+    );
+    const objectsUl = createList(
+      "objects",
+      this.model.objects,
+      this.model.players,
+    );
+    const roomsUl = createList("rooms", this.model.rooms, this.model.players);
+    this.element.replaceChildren(peopleUl, objectsUl, roomsUl);
   }
 
   async connectedCallback() {
   }
 }
 
-function createList(id: string, elements: string[], players: string[]) {
+function createList(id: string, elements: PlayerInfo[], players: PlayerInfo[]) {
   const ul = document.createElement("ul");
   ul.id = id;
   elements.forEach((obj) => {
     const li = document.createElement("li");
     const label = document.createElement("span");
-    label.textContent = obj;
+    label.textContent = obj.label;
     li.appendChild(label);
     players.forEach((p) => {
       const label = document.createElement("label");
       label.style.padding = "2px";
-      label.textContent = p;
+      label.textContent = p.label;
       li.appendChild(label);
       const select = document.createElement("select");
       select.innerHTML = `

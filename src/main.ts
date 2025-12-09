@@ -5,21 +5,23 @@ import {
   type ClickedBoardEvent,
   type PlayerBoardModel,
 } from "./view/board.ts";
+import { DiceViewComponent } from "./view/dice.ts";
 import type { DefineComponentFunc } from "./view/index.ts";
-import { ItemsViewComponent } from "./view/items.ts";
+import { ItemsViewComponent, type ItemsViewModel } from "./view/items.ts";
 import { getMap } from "./view/map.ts";
 
 const customComponents: DefineComponentFunc[] = [
+  DiceViewComponent.define,
   BoardViewComponent.define,
-  ItemsViewComponent.define,
 ];
 
 customComponents.forEach((c) => c(customElements));
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
+    <dice-component></dice-component>
     <board-component></board-component>
-    <items-component></items-component>
+    <div id="items-component"></div>
   </div>
 `;
 
@@ -104,3 +106,57 @@ function findNearValidPlayerBlock(x: number, y: number) {
     [x, y],
   ) => map[y][x] != " " && !map[y][x].startsWith("M"));
 }
+
+const diceComponent = document.querySelector<DiceViewComponent>(
+  "dice-component",
+)!;
+diceComponent.addEventListener("rolldice", (e) => {
+  console.log("roll dice", e);
+  const value = Math.floor(Math.random() * 100 % 12 + 1);
+  diceComponent.update({ dice: value });
+});
+
+const itemsModel: ItemsViewModel = {
+  players: [
+    { label: "pl1" },
+    { label: "pl2" },
+    { label: "pl3" },
+    { label: "pl4" },
+  ],
+  people: [
+    { label: "Miss Scarlet" },
+    { label: "Professor Plum" },
+    { label: "Colonnello Mustard" },
+    { label: "Dottor Green" },
+    { label: "Signora Bianchi" },
+    { label: "Signora Peacock" },
+  ],
+  objects: [
+    { label: "corda" },
+    { label: "tubo di piombo" },
+    { label: "pugnale" },
+    { label: "chiave inglese" },
+    { label: "candeliere" },
+    { label: "rivoltella" },
+  ],
+  rooms: [
+    { label: "Cucina" },
+    { label: "Sala da ballo" },
+    { label: "Serra" },
+    { label: "Sala da pranzo" },
+    { label: "Sala da biliardo" },
+    { label: "Biblioteca" },
+    { label: "Veranda" },
+    { label: "Anticamera" },
+    { label: "Studio" },
+  ],
+};
+
+const itemsComponentElement = document.querySelector(
+  "#items-component",
+)!;
+
+new ItemsViewComponent(
+  itemsComponentElement,
+  itemsModel,
+);
