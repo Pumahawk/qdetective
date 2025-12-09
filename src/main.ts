@@ -7,6 +7,7 @@ import {
 } from "./view/board.ts";
 import type { DefineComponentFunc } from "./view/index.ts";
 import { ItemsViewComponent } from "./view/items.ts";
+import { getMap } from "./view/map.ts";
 
 const customComponents: DefineComponentFunc[] = [
   BoardViewComponent.define,
@@ -34,9 +35,12 @@ const players: { [id: string]: PlayerBoardModel } = {
   p8: { id: "p8", position: [8, 0], asset: 8 },
 };
 
+const map = getMap();
+
 const boardModel: BoardModel = {
   players: Object.values(players),
   selection: [],
+  highlight: [],
 };
 const boardComponent = document.querySelector<BoardViewComponent>(
   "board-component",
@@ -48,7 +52,8 @@ boardComponent!.updateModel(
 boardComponent?.addEventListener(
   "blockclicked",
   (event) => {
-    const [x, y] = (event as CustomEvent<ClickedBoardEvent>).detail.position;
+    const pos = (event as CustomEvent<ClickedBoardEvent>).detail.position;
+    const [x, y] = pos;
     console.log(
       `Block cliccked [${x}, ${y}]`,
     );
@@ -62,6 +67,22 @@ boardComponent?.addEventListener(
     }
     players.p8.position = [x, y];
     boardModel.players = Object.values(players);
+    boardModel.highlight = findNearBlock(pos[0], pos[1]).filter((
+      [x, y],
+    ) => map[y][x] != " " && !map[y][x].startsWith("M")).map((
+      // ) => true).map((
+      [x, y],
+    ) => ({
+      position: [x, y],
+    }));
     boardComponent.updateModel(boardModel);
   },
 );
+
+function findNearBlock(pointX: number, pointY: number) {
+  return [[1, 0], [-1, 0], [0, -1], [0, +1]]
+    .filter(([x, y]) =>
+      pointX + x >= 0 && pointY + y >= 0 &&
+      pointX + x < map[0].length && pointY + y < map.length
+    ).map(([x, y]) => [pointX + x, pointY + y]);
+}

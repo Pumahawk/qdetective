@@ -2,10 +2,11 @@ import { getMap } from "./map.ts";
 
 export interface BoardModel {
   players: PlayerBoardModel[];
-  selection: BlockBoardSelection[];
+  selection: BlockBoardMeta[];
+  highlight: BlockBoardMeta[];
 }
 
-export interface BlockBoardSelection {
+export interface BlockBoardMeta {
   position: [number, number];
 }
 
@@ -81,6 +82,10 @@ export class BoardViewComponent extends HTMLElement {
         for (const selectedBlock of this.model.selection) {
           const [x, y] = selectedBlock.position;
           this.assetManager.selectBlock(x, y);
+        }
+        for (const highlight of this.model.highlight) {
+          const [x, y] = highlight.position;
+          this.assetManager.highlightBlock(x, y);
         }
         for (const player of this.model.players) {
           const [x, y] = player.position;
@@ -294,6 +299,18 @@ class AssetManager {
       this.blockSize,
     );
     this.ctx.fillStyle = "rgba(247, 169, 95, 0.6)";
+    this.ctx.fill();
+  }
+
+  highlightBlock(x: number, y: number) {
+    this.ctx.beginPath();
+    this.ctx.rect(
+      x * this.blockSize,
+      y * this.blockSize,
+      this.blockSize,
+      this.blockSize,
+    );
+    this.ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
     this.ctx.fill();
   }
 
