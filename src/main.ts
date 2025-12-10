@@ -7,7 +7,12 @@ import {
 } from "./view/board.ts";
 import { DiceViewComponent } from "./view/dice.ts";
 import type { DefineComponentFunc } from "./view/index.ts";
-import { ItemsViewComponent, type ItemsViewModel } from "./view/items.ts";
+import {
+  type ConfirmDataItemSelection as ConfirmDataItemSelectionComponent,
+  ItemSelectionComponent,
+  ItemsViewComponent,
+  type ItemsViewModel,
+} from "./view/items.ts";
 import { getMap } from "./view/map.ts";
 
 const customComponents: DefineComponentFunc[] = [
@@ -21,6 +26,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
     <dice-component></dice-component>
     <board-component></board-component>
+    <div id="item-selection-component"></div>
     <div id="items-component"></div>
   </div>
 `;
@@ -159,4 +165,16 @@ const itemsComponentElement = document.querySelector(
 new ItemsViewComponent(
   itemsComponentElement,
   itemsModel,
+);
+
+const itemsSelectionComponent = document.querySelector(
+  "#item-selection-component",
+)!;
+new ItemSelectionComponent(itemsSelectionComponent, itemsModel);
+itemsSelectionComponent.addEventListener(
+  "itemselectionform",
+  (e) => {
+    const detail = (e as CustomEvent<ConfirmDataItemSelectionComponent>).detail;
+    console.log("Item selected event component", e, detail);
+  },
 );

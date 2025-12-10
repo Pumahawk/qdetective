@@ -65,3 +65,97 @@ function createList(id: string, elements: PlayerInfo[], players: PlayerInfo[]) {
   });
   return ul;
 }
+
+export interface ConfirmDataItemSelection {
+  person: ItemInfo;
+  object: ItemInfo;
+  room: ItemInfo;
+}
+
+export interface ItemSelectionModel {
+  people: ItemInfo[];
+  objects: ItemInfo[];
+  rooms: ItemInfo[];
+}
+
+export class ItemSelectionComponent {
+  element: Element;
+  model: ItemSelectionModel;
+
+  constructor(element: Element, model: ItemSelectionModel) {
+    this.element = element;
+    this.model = model;
+    this.draw();
+  }
+
+  draw() {
+    this.element.innerHTML = `
+<form id="itemselectionform">
+  <div>
+    <div>Person</div>
+    <div>
+      <select id="personselection"></select>
+    </div>
+  </div>
+  <div>
+    <div>Object</div>
+    <div>
+      <select id="objectselection"></select>
+    </div>
+  </div>
+  <div>
+    <div>Room</div>
+    <div>
+      <select id="roomselection"></select>
+    </div>
+  </div>
+  <div>
+    <button type="submit">Confirm</button>
+  </div>
+</form>
+`;
+
+    const personSelection = createSelectionElement<HTMLSelectElement>(
+      this.element.querySelector("#personselection")!,
+      this.model.people,
+    );
+    const objectSelection = createSelectionElement<HTMLSelectElement>(
+      this.element.querySelector("#objectselection")!,
+      this.model.objects,
+    );
+    const roomSelection = createSelectionElement<HTMLSelectElement>(
+      this.element.querySelector("#roomselection")!,
+      this.model.rooms,
+    );
+
+    const form = this.element.querySelector("#itemselectionform")!;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.element.dispatchEvent(
+        new CustomEvent<ConfirmDataItemSelection>("itemselectionform", {
+          detail: {
+            person: this.model.people[Number(personSelection.value)],
+            object: this.model.people[Number(objectSelection.value)],
+            room: this.model.people[Number(roomSelection.value)],
+          },
+        }),
+      );
+    });
+  }
+}
+
+function createSelectionElement<T extends Element>(
+  element: T,
+  items: ItemInfo[],
+) {
+  items.map((e, i) => itemInfoToOptionElement(i, e)).forEach(
+    (e) => element.appendChild(e),
+  );
+  return element;
+}
+function itemInfoToOptionElement(i: number, item: ItemInfo): HTMLOptionElement {
+  const option = document.createElement("option");
+  option.value = String(i);
+  option.innerText = item.label;
+  return option;
+}
