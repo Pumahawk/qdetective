@@ -20,7 +20,7 @@ export interface ClickedBoardEvent {
   position: [number, number];
 }
 
-export class BoardViewComponent extends HTMLElement {
+export class BoardViewComponent {
   blockSize = 16;
   boardSizeX = 25 * this.blockSize;
   boardSizeY = 25 * this.blockSize;
@@ -29,24 +29,20 @@ export class BoardViewComponent extends HTMLElement {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
-  model?: BoardModel;
+  element: Element;
+  model: BoardModel;
   assetManager?: AssetManager;
-
-  static define(ce: CustomElementRegistry) {
-    ce.define("board-component", BoardViewComponent);
-  }
 
   updateModel(model: BoardModel) {
     this.model = model;
     this.draw();
   }
 
-  constructor() {
-    super();
+  constructor(element: Element, model: BoardModel) {
+    this.element = element;
+    this.model = model;
 
-    this.model = undefined;
-
-    this.shadow = this.attachShadow({ mode: "open" });
+    this.shadow = this.element.attachShadow({ mode: "open" });
 
     this.canvas = document.createElement("canvas") as HTMLCanvasElement;
 
@@ -101,7 +97,7 @@ export class BoardViewComponent extends HTMLElement {
         position: [x, y],
       },
     });
-    this.dispatchEvent(event);
+    this.element.dispatchEvent(event);
   }
 
   private handleClickOnCanvas(event: MouseEvent) {

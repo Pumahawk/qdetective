@@ -78,7 +78,7 @@ export interface ItemSelectionModel {
   rooms: ItemInfo[];
 }
 
-export class ItemSelectionComponent {
+export class ItemSelectionViewComponent {
   element: Element;
   model: ItemSelectionModel;
 

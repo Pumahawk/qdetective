@@ -1,16 +1,13 @@
 export interface DiceViewModel {
   dice: number | null;
 }
-export class DiceViewComponent extends HTMLElement {
+export class DiceViewComponent {
+  element: Element;
   model: DiceViewModel;
 
-  static define(ce: CustomElementRegistry) {
-    ce.define("dice-component", DiceViewComponent);
-  }
-
-  constructor() {
-    super();
-    this.model = { dice: null };
+  constructor(element: Element, model: DiceViewModel) {
+    this.element = element;
+    this.model = model;
     this.draw();
   }
 
@@ -20,14 +17,14 @@ export class DiceViewComponent extends HTMLElement {
   }
 
   draw() {
-    this.innerHTML = `
+    this.element.innerHTML = `
 <div>
   <button id="roll-dice">X</button>
   <div>${this.model.dice ?? "undefined"}</div>
 </div>
 `;
-    this.querySelector("#roll-dice")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("rolldice"));
+    this.element.querySelector("#roll-dice")?.addEventListener("click", () => {
+      this.element.dispatchEvent(new CustomEvent("rolldice"));
     });
   }
 }
