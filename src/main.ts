@@ -64,6 +64,7 @@ const appModel: AppModel = {
     players: Object.values(players),
     selection: [],
     highlight: findNearValidPlayerBlock(
+      getMap(),
       players.p8.position[0],
       players.p8.position[1],
     ).map((
@@ -105,7 +106,7 @@ appElement.addEventListener(
     }
     players.p8.position = [x, y];
     appModel.boardModel.players = Object.values(players);
-    appModel.boardModel.highlight = findNearBlock(pos[0], pos[1]).filter((
+    appModel.boardModel.highlight = findNearBlock(map, pos[0], pos[1]).filter((
       [x, y],
     ) => map[y][x] != " " && !map[y][x].startsWith("M")).map((
       // ) => true).map((
@@ -117,7 +118,7 @@ appElement.addEventListener(
   },
 );
 
-function findNearBlock(pointX: number, pointY: number) {
+function findNearBlock(map: string[][], pointX: number, pointY: number) {
   return [[1, 0], [-1, 0], [0, -1], [0, +1]]
     .filter(([x, y]) =>
       pointX + x >= 0 && pointY + y >= 0 &&
@@ -125,8 +126,8 @@ function findNearBlock(pointX: number, pointY: number) {
     ).map(([x, y]) => [pointX + x, pointY + y]);
 }
 
-function findNearValidPlayerBlock(x: number, y: number) {
-  return findNearBlock(x, y).filter((
+function findNearValidPlayerBlock(map: string[][], x: number, y: number) {
+  return findNearBlock(map, x, y).filter((
     [x, y],
   ) => map[y][x] != " " && !map[y][x].startsWith("M"));
 }

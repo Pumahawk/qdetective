@@ -35,8 +35,7 @@ export class ItemsViewComponent {
     this.element.replaceChildren(peopleUl, objectsUl, roomsUl);
   }
 
-  async connectedCallback() {
-  }
+  draw() {}
 }
 
 function createList(id: string, elements: PlayerInfo[], players: PlayerInfo[]) {

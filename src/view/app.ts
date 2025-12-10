@@ -34,7 +34,14 @@ export class AppComponent {
 
   update(model: AppModel) {
     this.model = model;
-    this.draw();
+    this.drawSubComponent();
+  }
+
+  drawSubComponent() {
+    this.diceComponent?.draw();
+    this.boardComponent?.draw();
+    this.itemSelectionComponent?.draw();
+    this.itemsComponent?.draw();
   }
 
   draw() {
@@ -59,7 +66,13 @@ export class AppComponent {
       el,
       this.model.diceViewModel,
     );
-    el.addEventListener("rolldice", (e) => this.element.dispatchEvent(e));
+    el.addEventListener(
+      "rolldice",
+      () =>
+        this.element.dispatchEvent(
+          new CustomEvent("rolldice"),
+        ),
+    );
   }
 
   drawBoardComponent() {
@@ -68,7 +81,16 @@ export class AppComponent {
       el,
       this.model.boardModel,
     )!;
-    el.addEventListener("blockclicked", (e) => this.element.dispatchEvent(e));
+    el.addEventListener(
+      "blockclicked",
+      (e) => {
+        this.element.dispatchEvent(
+          new CustomEvent("blockclicked", {
+            detail: (e as CustomEvent).detail,
+          }),
+        );
+      },
+    );
   }
 
   drawItemSelectionComponent() {
@@ -81,7 +103,12 @@ export class AppComponent {
     );
     el.addEventListener(
       "itemselectionform",
-      (e) => this.element.dispatchEvent(e),
+      (e) =>
+        this.element.dispatchEvent(
+          new CustomEvent("itemselectionform", {
+            detail: (e as CustomEvent).detail,
+          }),
+        ),
     );
   }
 

@@ -56,22 +56,10 @@ export class BoardViewComponent {
     this.ctx = this.canvas.getContext("2d")!;
 
     this.shadow.appendChild(this.canvas);
-  }
-
-  async connectedCallback() {
-    const assetLoader = new AssetLoader();
-    this.assetManager = new AssetManager(this.ctx, {
-      assets: assetLoader.load("/assets.png"),
-      rooms: assetLoader.load("/rooms.png"),
-      players: assetLoader.load("/players.png"),
-    });
-
-    await Promise.all(assetLoader.getImages().map((img) => img.decode()));
-
     this.draw();
   }
 
-  private draw() {
+  draw() {
     if (this.assetManager) {
       this.assetManager.drawBoard();
       if (this.model) {
@@ -88,6 +76,17 @@ export class BoardViewComponent {
           this.assetManager.drawPlayer(player.asset, x, y);
         }
       }
+    } else {
+      const assetLoader = new AssetLoader();
+      this.assetManager = new AssetManager(this.ctx, {
+        assets: assetLoader.load("/assets.png"),
+        rooms: assetLoader.load("/rooms.png"),
+        players: assetLoader.load("/players.png"),
+      });
+
+      Promise.all(assetLoader.getImages().map((img) => img.decode())).then(() =>
+        this.draw()
+      );
     }
   }
 
