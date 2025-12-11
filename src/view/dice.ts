@@ -1,30 +1,32 @@
+import { BaseComponent } from "./base.ts";
+
 export interface DiceViewModel {
   dice: number | null;
 }
-export class DiceViewComponent {
-  element: Element;
-  model: DiceViewModel;
+export function DiceViewComponentF(cr: CustomElementRegistry) {
+  class DiceViewComponent extends BaseComponent<DiceViewModel> {
+    diceNumberElement?: HTMLElement;
 
-  constructor(element: Element, model: DiceViewModel) {
-    this.element = element;
-    this.model = model;
-    this.draw();
-  }
+    constructor() {
+      super();
+    }
 
-  update(model: DiceViewModel) {
-    this.model = model;
-    this.draw();
-  }
+    updateInternalModel(model: DiceViewModel): void {
+      if (this.diceNumberElement && model.dice != null) {
+        this.diceNumberElement.innerText = String(model.dice);
+      }
+    }
 
-  draw() {
-    this.element.innerHTML = `
-<div>
-  <button id="roll-dice">X</button>
-  <div>${this.model.dice ?? "undefined"}</div>
-</div>
+    connectedCallback() {
+      this.innerHTML = `
+<button id="roll-dice-button">X</button>
+<div id="roll-dice-label"></div>
 `;
-    this.element.querySelector("#roll-dice")?.addEventListener("click", () => {
-      this.element.dispatchEvent(new CustomEvent("rolldice"));
-    });
+      this.querySelector("#roll-dice-button")?.addEventListener("click", () => {
+        this.dispatchEvent(new CustomEvent("rolldice"));
+      });
+      this.diceNumberElement = this.querySelector("#roll-dice-label")!;
+    }
   }
+  cr.define("dice-component", DiceViewComponent);
 }

@@ -1,3 +1,4 @@
+import { BaseComponent } from "./base.ts";
 import { getMap } from "./map.ts";
 
 export interface BoardModel {
@@ -20,63 +21,41 @@ export interface ClickedBoardEvent {
   position: [number, number];
 }
 
-export class BoardViewComponent {
-  blockSize = 16;
-  boardSizeX = 25 * this.blockSize;
-  boardSizeY = 25 * this.blockSize;
+export function BoardViewComponentF(cr: CustomElementRegistry) {
+  class BoardViewComponent extends BaseComponent<BoardModel> {
+    blockSize = 16;
+    boardSizeX = 25 * this.blockSize;
+    boardSizeY = 25 * this.blockSize;
 
-  shadow: ShadowRoot;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
+    shadow?: ShadowRoot;
+    canvas?: HTMLCanvasElement;
+    ctx?: CanvasRenderingContext2D;
 
-  element: Element;
-  model: BoardModel;
-  assetManager?: AssetManager;
+    assetManager?: AssetManager;
 
-  updateModel(model: BoardModel) {
-    this.model = model;
-    this.draw();
-  }
+    constructor() {
+      super();
+    }
 
-  constructor(element: Element, model: BoardModel) {
-    this.element = element;
-    this.model = model;
+    updateInternalModel(model: BoardModel): void {
+      this.draw(model);
+    }
 
-    this.shadow = this.element.attachShadow({ mode: "open" });
+    async connectedCallback() {
+      this.shadow = this.attachShadow({ mode: "open" });
 
-    this.canvas = document.createElement("canvas") as HTMLCanvasElement;
+      this.canvas = document.createElement("canvas") as HTMLCanvasElement;
 
-    this.canvas.width = this.boardSizeX;
-    this.canvas.height = this.boardSizeY;
-    this.canvas.style.width = "1000px";
-    this.canvas.style.height = "1000px";
-    this.canvas.style.imageRendering = "pixelated";
-    this.canvas.addEventListener("click", (e) => this.handleClickOnCanvas(e));
+      this.canvas.width = this.boardSizeX;
+      this.canvas.height = this.boardSizeY;
+      this.canvas.style.width = "1000px";
+      this.canvas.style.height = "1000px";
+      this.canvas.style.imageRendering = "pixelated";
+      this.canvas.addEventListener("click", (e) => this.handleClickOnCanvas(e));
 
-    this.ctx = this.canvas.getContext("2d")!;
+      this.ctx = this.canvas.getContext("2d")!;
 
-    this.shadow.appendChild(this.canvas);
-    this.draw();
-  }
-
-  draw() {
-    if (this.assetManager) {
-      this.assetManager.drawBoard();
-      if (this.model) {
-        for (const selectedBlock of this.model.selection) {
-          const [x, y] = selectedBlock.position;
-          this.assetManager.selectBlock(x, y);
-        }
-        for (const highlight of this.model.highlight) {
-          const [x, y] = highlight.position;
-          this.assetManager.highlightBlock(x, y);
-        }
-        for (const player of this.model.players) {
-          const [x, y] = player.position;
-          this.assetManager.drawPlayer(player.asset, x, y);
-        }
-      }
-    } else {
+      this.shadow.appendChild(this.canvas);
       const assetLoader = new AssetLoader();
       this.assetManager = new AssetManager(this.ctx, {
         assets: assetLoader.load("/assets.png"),
@@ -84,31 +63,52 @@ export class BoardViewComponent {
         players: assetLoader.load("/players.png"),
       });
 
-      Promise.all(assetLoader.getImages().map((img) => img.decode())).then(() =>
-        this.draw()
-      );
+      await Promise.all(assetLoader.getImages().map((img) => img.decode()));
+    }
+
+    draw(model: BoardModel) {
+      if (this.assetManager) {
+        this.assetManager.drawBoard();
+        if (model) {
+          for (const selectedBlock of model.selection) {
+            const [x, y] = selectedBlock.position;
+            this.assetManager.selectBlock(x, y);
+          }
+          for (const highlight of model.highlight) {
+            const [x, y] = highlight.position;
+            this.assetManager.highlightBlock(x, y);
+          }
+          for (const player of model.players) {
+            const [x, y] = player.position;
+            this.assetManager.drawPlayer(player.asset, x, y);
+          }
+        }
+      }
+    }
+
+    private dispatchBlockClick(x: number, y: number) {
+      const event = new CustomEvent<ClickedBoardEvent>("blockclicked", {
+        detail: {
+          position: [x, y],
+        },
+      });
+      this.dispatchEvent(event);
+    }
+
+    private handleClickOnCanvas(event: MouseEvent) {
+      if (this.canvas) {
+        const cp = this.canvas.getBoundingClientRect();
+        const x = Math.floor(
+          (event.x - cp.x) / (this.blockSize * cp.width / this.boardSizeX),
+        );
+        const y = Math.floor(
+          (event.y - cp.y) / (this.blockSize * cp.height / this.boardSizeY),
+        );
+        this.dispatchBlockClick(x, y);
+      }
     }
   }
-
-  private dispatchBlockClick(x: number, y: number) {
-    const event = new CustomEvent<ClickedBoardEvent>("blockclicked", {
-      detail: {
-        position: [x, y],
-      },
-    });
-    this.element.dispatchEvent(event);
-  }
-
-  private handleClickOnCanvas(event: MouseEvent) {
-    const cp = this.canvas.getBoundingClientRect();
-    const x = Math.floor(
-      (event.x - cp.x) / (this.blockSize * cp.width / this.boardSizeX),
-    );
-    const y = Math.floor(
-      (event.y - cp.y) / (this.blockSize * cp.height / this.boardSizeY),
-    );
-    this.dispatchBlockClick(x, y);
-  }
+  cr.define("board-component", BoardViewComponent);
 }
 
 type AssetXY = [number, number, [number, number]?];

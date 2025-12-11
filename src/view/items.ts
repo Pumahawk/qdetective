@@ -1,3 +1,5 @@
+import { BaseComponent } from "./base.ts";
+
 export interface ItemInfo {
   label: string;
 }
@@ -13,33 +15,43 @@ export interface ItemsViewModel {
   rooms: ItemInfo[];
 }
 
-export class ItemsViewComponent {
-  model: ItemsViewModel;
-  element: Element;
+export class ItemsViewComponent extends BaseComponent<ItemsViewModel> {
+  peopleUl?: HTMLUListElement;
+  objectsUl?: HTMLUListElement;
+  roomsUl?: HTMLUListElement;
 
-  constructor(element: Element, model: ItemsViewModel) {
-    this.element = element;
-    this.model = model;
-
-    const peopleUl = createList(
-      "people",
-      this.model.players,
-      this.model.players,
-    );
-    const objectsUl = createList(
-      "objects",
-      this.model.objects,
-      this.model.players,
-    );
-    const roomsUl = createList("rooms", this.model.rooms, this.model.players);
-    this.element.replaceChildren(peopleUl, objectsUl, roomsUl);
+  constructor() {
+    super();
   }
 
-  draw() {}
+  updateInternalModel(model: ItemsViewModel): void {
+    updateList(this.peopleUl, "people", model.players, model.players);
+    updateList(this.objectsUl, "objects", model.objects, model.players);
+    updateList(this.roomsUl, "rooms", model.rooms, model.players);
+  }
+
+  connectedCallback() {
+    this.innerHTML = `
+<ul id="people-ul"></ul>
+<ul id="objects-ul"></ul>
+<ul id="rooms-ul"></ul>
+`;
+    this.peopleUl = this.querySelector("people-ul")!;
+    this.objectsUl = this.querySelector("objects-ul")!;
+    this.roomsUl = this.querySelector("rooms-ul")!;
+  }
 }
 
-function createList(id: string, elements: PlayerInfo[], players: PlayerInfo[]) {
-  const ul = document.createElement("ul");
+function updateList(
+  ul: HTMLUListElement | undefined,
+  id: string,
+  elements: PlayerInfo[],
+  players: PlayerInfo[],
+): void {
+  if (!ul) {
+    return;
+  }
+  ul.innerHTML = "";
   ul.id = id;
   elements.forEach((obj) => {
     const li = document.createElement("li");
@@ -62,7 +74,6 @@ function createList(id: string, elements: PlayerInfo[], players: PlayerInfo[]) {
     });
     ul.appendChild(li);
   });
-  return ul;
 }
 
 export interface ConfirmDataItemSelection {
@@ -77,18 +88,25 @@ export interface ItemSelectionModel {
   rooms: ItemInfo[];
 }
 
-export class ItemSelectionViewComponent {
-  element: Element;
-  model: ItemSelectionModel;
+export class ItemSelectionViewComponent
+  extends BaseComponent<ItemSelectionModel> {
+  personSelection?: HTMLSelectElement;
+  objectSelection?: HTMLSelectElement;
+  roomSelection?: HTMLSelectElement;
+  form?: HTMLFormElement;
 
-  constructor(element: Element, model: ItemSelectionModel) {
-    this.element = element;
-    this.model = model;
-    this.draw();
+  constructor() {
+    super();
   }
 
-  draw() {
-    this.element.innerHTML = `
+  updateInternalModel(model: ItemSelectionModel): void {
+    updateSelectionElement(this.personSelection, model.people);
+    updateSelectionElement(this.objectSelection, model.objects);
+    updateSelectionElement(this.roomSelection, model.rooms);
+  }
+
+  connectedCallback() {
+    this.innerHTML = `
 <form id="itemselectionform">
   <div>
     <div>Person</div>
@@ -114,28 +132,19 @@ export class ItemSelectionViewComponent {
 </form>
 `;
 
-    const personSelection = createSelectionElement<HTMLSelectElement>(
-      this.element.querySelector("#personselection")!,
-      this.model.people,
-    );
-    const objectSelection = createSelectionElement<HTMLSelectElement>(
-      this.element.querySelector("#objectselection")!,
-      this.model.objects,
-    );
-    const roomSelection = createSelectionElement<HTMLSelectElement>(
-      this.element.querySelector("#roomselection")!,
-      this.model.rooms,
-    );
+    this.personSelection = this.querySelector("#personselection")!;
+    this.objectSelection = this.querySelector("#objectselection")!;
+    this.roomSelection = this.querySelector("#roomselection")!;
+    this.form = this.querySelector("#itemselectionform")!;
 
-    const form = this.element.querySelector("#itemselectionform")!;
-    form.addEventListener("submit", (e) => {
+    this.form.addEventListener("submit", (e) => {
       e.preventDefault();
-      this.element.dispatchEvent(
+      this.dispatchEvent(
         new CustomEvent<ConfirmDataItemSelection>("itemselectionform", {
           detail: {
-            person: this.model.people[Number(personSelection.value)],
-            object: this.model.people[Number(objectSelection.value)],
-            room: this.model.people[Number(roomSelection.value)],
+            person: { label: this.personSelection?.value ?? "undefined" },
+            object: { label: this.objectSelection?.value ?? "undefined" },
+            room: { label: this.roomSelection?.value ?? "undefined" },
           },
         }),
       );
@@ -143,15 +152,17 @@ export class ItemSelectionViewComponent {
   }
 }
 
-function createSelectionElement<T extends Element>(
-  element: T,
+function updateSelectionElement<T extends Element>(
+  element: T | undefined,
   items: ItemInfo[],
 ) {
-  items.map((e, i) => itemInfoToOptionElement(i, e)).forEach(
-    (e) => element.appendChild(e),
-  );
-  return element;
+  if (element != undefined) {
+    items.map((e, i) => itemInfoToOptionElement(i, e)).forEach(
+      (e) => element?.appendChild(e),
+    );
+  }
 }
+
 function itemInfoToOptionElement(i: number, item: ItemInfo): HTMLOptionElement {
   const option = document.createElement("option");
   option.value = String(i);
