@@ -1,4 +1,3 @@
-import { BaseComponent } from "./base.ts";
 import { getMap } from "./map.ts";
 
 export interface BoardModel {
@@ -21,8 +20,13 @@ export interface ClickedBoardEvent {
   position: [number, number];
 }
 
+export interface BoardViewComponent extends HTMLElement {
+  update(model: BoardModel): void;
+}
+
 export function BoardViewComponentF(cr: CustomElementRegistry) {
-  class BoardViewComponent extends BaseComponent<BoardModel> {
+  class BoardViewComponentImpl extends HTMLElement
+    implements BoardViewComponent {
     blockSize = 16;
     boardSizeX = 25 * this.blockSize;
     boardSizeY = 25 * this.blockSize;
@@ -37,7 +41,7 @@ export function BoardViewComponentF(cr: CustomElementRegistry) {
       super();
     }
 
-    updateInternalModel(model: BoardModel): void {
+    update(model: BoardModel): void {
       this.draw(model);
     }
 
@@ -108,7 +112,7 @@ export function BoardViewComponentF(cr: CustomElementRegistry) {
       }
     }
   }
-  cr.define("board-component", BoardViewComponent);
+  cr.define("board-component", BoardViewComponentImpl);
 }
 
 type AssetXY = [number, number, [number, number]?];

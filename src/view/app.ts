@@ -1,10 +1,10 @@
-import { BaseComponent } from "./base.ts";
-import { type BoardModel } from "./board.ts";
-import { type DiceViewModel } from "./dice.ts";
+import type { GameService } from "../services/index.ts";
+import { type BoardModel, type BoardViewComponent } from "./board.ts";
+import { type DiceViewComponent, type DiceViewModel } from "./dice.ts";
 import {
   type ItemSelectionModel,
-  ItemSelectionViewComponent,
-  ItemsViewComponent,
+  type ItemSelectionViewComponent,
+  type ItemsViewComponent,
   type ItemsViewModel,
 } from "./items.ts";
 
@@ -18,10 +18,17 @@ export interface AppModel {
   diceViewModel: DiceViewModel;
 }
 
-export function AppComponenF(cr: CustomElementRegistry) {
-  class AppComponent extends BaseComponent<AppModel> {
-    diceComponent?: BaseComponent<DiceViewModel>;
-    boardComponent?: BaseComponent<BoardModel>;
+export interface AppComponent extends HTMLElement {
+  update(mode: AppModel): void;
+}
+
+export function AppComponenF(
+  cr: CustomElementRegistry,
+  gameService: GameService,
+) {
+  class AppComponentImpl extends HTMLElement implements AppComponent {
+    diceComponent?: DiceViewComponent;
+    boardComponent?: BoardViewComponent;
     itemSelectionComponent?: ItemSelectionViewComponent;
     itemsComponent?: ItemsViewComponent;
 
@@ -29,7 +36,7 @@ export function AppComponenF(cr: CustomElementRegistry) {
       super();
     }
 
-    updateInternalModel(_: AppModel): void {
+    update(_: AppModel) {
     }
 
     connectedCallback() {
@@ -40,11 +47,19 @@ export function AppComponenF(cr: CustomElementRegistry) {
 <items-component></items-component>
 `;
 
-      this.loadComponent("dice-component", () => {});
-      this.loadComponent("board-component", () => {});
-      this.loadComponent("itemselection-component", () => {});
-      this.loadComponent("items-component", () => {});
+      this.diceComponent = this.querySelector<DiceViewComponent>(
+        "dice-component",
+      )!;
+      this.boardComponent = this.querySelector<BoardViewComponent>(
+        "board-component",
+      )!;
+      this.itemsComponent = this.querySelector<ItemsViewComponent>(
+        "items-component",
+      )!;
+      this.itemSelectionComponent = this.querySelector<
+        ItemSelectionViewComponent
+      >("itemselection-component")!;
     }
   }
-  cr.define("app-component", AppComponent);
+  cr.define("app-component", AppComponentImpl);
 }

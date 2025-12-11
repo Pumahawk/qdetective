@@ -1,8 +1,11 @@
+import { GameControllerImpl } from "./controllers/index.ts";
 import "./style.css";
-import { AppComponent, type AppModel } from "./view/app.ts";
-import { type ClickedBoardEvent, type PlayerBoardModel } from "./view/board.ts";
+import { AppComponenF, type AppModel } from "./view/app.ts";
+import { BoardViewComponentF, type PlayerBoardModel } from "./view/board.ts";
+import { DiceViewComponentF } from "./view/dice.ts";
 import {
-  type ConfirmDataItemSelection as ConfirmDataItemSelectionComponent,
+  ItemSelectionViewComponentF,
+  ItemsViewComponentF,
 } from "./view/items.ts";
 import { getMap } from "./view/map.ts";
 
@@ -74,49 +77,58 @@ const appModel: AppModel = {
 };
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
-const appComponent = new AppComponent(
-  appElement,
-  appModel,
-);
 
-const map = getMap();
+AppComponenF(customElements, new GameControllerImpl());
+BoardViewComponentF(customElements);
+DiceViewComponentF(customElements);
+ItemsViewComponentF(customElements);
+ItemSelectionViewComponentF(customElements);
 
-appElement.addEventListener(
-  "blockclicked",
-  (event) => {
-    const pos = (event as CustomEvent<ClickedBoardEvent>).detail.position;
-    const [x, y] = pos;
-    console.log("X, Y", x, y);
-    if (
-      !appModel.boardModel.highlight.map((b) => b.position).find(([xh, yh]) =>
-        xh == x && yh == y
-      )
-    ) {
-      return;
-    }
-    if (map[y][x] != "x" && map[y][x] != "S") {
-      return;
-    }
-    if (
-      !appModel.boardModel.selection.find((s) =>
-        s.position[0] == x && s.position[1] == y
-      )
-    ) {
-      appModel.boardModel.selection.push({ position: [x, y] });
-    }
-    players.p8.position = [x, y];
-    appModel.boardModel.players = Object.values(players);
-    appModel.boardModel.highlight = findNearBlock(map, pos[0], pos[1]).filter((
-      [x, y],
-    ) => map[y][x] != " " && !map[y][x].startsWith("M")).map((
-      // ) => true).map((
-      [x, y],
-    ) => ({
-      position: [x, y],
-    }));
-    appComponent.update(appModel);
-  },
-);
+appElement.innerHTML = `
+<app-component></app-component>
+`;
+
+// const appComponent = document.querySelector("app-component")!;
+
+// const map = getMap();
+//
+// appElement.addEventListener(
+//   "blockclicked",
+//   (event) => {
+//     const pos = (event as CustomEvent<ClickedBoardEvent>).detail.position;
+//     const [x, y] = pos;
+//     console.log("X, Y", x, y);
+//     if (
+//       !appModel.boardModel.highlight.map((b) => b.position).find(([xh, yh]) =>
+//         xh == x && yh == y
+//       )
+//     ) {
+//       return;
+//     }
+//     if (map[y][x] != "x" && map[y][x] != "S") {
+//       return;
+//     }
+//     if (
+//       !appModel.boardModel.selection.find((s) =>
+//         s.position[0] == x && s.position[1] == y
+//       )
+//     ) {
+//       appModel.boardModel.selection.push({ position: [x, y] });
+//     }
+//     players.p8.position = [x, y];
+//     appModel.boardModel.players = Object.values(players);
+//     appModel.boardModel.highlight = findNearBlock(map, pos[0], pos[1]).filter((
+//       [x, y],
+//     ) => map[y][x] != " " && !map[y][x].startsWith("M")).map((
+//       // ) => true).map((
+//       [x, y],
+//     ) => ({
+//       position: [x, y],
+//     }));
+//     appComponent.update(appModel);
+//   },
+// );
+//
 
 function findNearBlock(map: string[][], pointX: number, pointY: number) {
   return [[1, 0], [-1, 0], [0, -1], [0, +1]]
@@ -132,17 +144,18 @@ function findNearValidPlayerBlock(map: string[][], x: number, y: number) {
   ) => map[y][x] != " " && !map[y][x].startsWith("M"));
 }
 
-appElement.addEventListener("rolldice", (e) => {
-  console.log("roll dice", e);
-  const value = Math.floor(Math.random() * 100 % 12 + 1);
-  appModel.diceViewModel = { dice: value };
-  appComponent.update(appModel);
-});
-
-appElement.addEventListener(
-  "itemselectionform",
-  (e) => {
-    const detail = (e as CustomEvent<ConfirmDataItemSelectionComponent>).detail;
-    console.log("Item selected event component", e, detail);
-  },
-);
+//
+// appElement.addEventListener("rolldice", (e) => {
+//   console.log("roll dice", e);
+//   const value = Math.floor(Math.random() * 100 % 12 + 1);
+//   appModel.diceViewModel = { dice: value };
+//   appComponent.update(appModel);
+// });
+//
+// appElement.addEventListener(
+//   "itemselectionform",
+//   (e) => {
+//     const detail = (e as CustomEvent<ConfirmDataItemSelectionComponent>).detail;
+//     console.log("Item selected event component", e, detail);
+//   },
+// );

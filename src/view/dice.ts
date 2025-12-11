@@ -1,17 +1,20 @@
-import { BaseComponent } from "./base.ts";
-
 export interface DiceViewModel {
   dice: number | null;
 }
+
+export interface DiceViewComponent extends Element {
+  update(model: DiceViewModel): void;
+}
+
 export function DiceViewComponentF(cr: CustomElementRegistry) {
-  class DiceViewComponent extends BaseComponent<DiceViewModel> {
+  class DiceViewComponentImpl extends HTMLElement implements DiceViewComponent {
     diceNumberElement?: HTMLElement;
 
     constructor() {
       super();
     }
 
-    updateInternalModel(model: DiceViewModel): void {
+    update(model: DiceViewModel): void {
       if (this.diceNumberElement && model.dice != null) {
         this.diceNumberElement.innerText = String(model.dice);
       }
@@ -28,5 +31,5 @@ export function DiceViewComponentF(cr: CustomElementRegistry) {
       this.diceNumberElement = this.querySelector("#roll-dice-label")!;
     }
   }
-  cr.define("dice-component", DiceViewComponent);
+  cr.define("dice-component", DiceViewComponentImpl);
 }

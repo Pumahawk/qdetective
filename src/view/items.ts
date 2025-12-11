@@ -1,5 +1,3 @@
-import { BaseComponent } from "./base.ts";
-
 export interface ItemInfo {
   label: string;
 }
@@ -15,31 +13,39 @@ export interface ItemsViewModel {
   rooms: ItemInfo[];
 }
 
-export class ItemsViewComponent extends BaseComponent<ItemsViewModel> {
-  peopleUl?: HTMLUListElement;
-  objectsUl?: HTMLUListElement;
-  roomsUl?: HTMLUListElement;
+export interface ItemsViewComponent extends HTMLElement {
+  update(model: ItemsViewModel): void;
+}
 
-  constructor() {
-    super();
-  }
+export function ItemsViewComponentF(cr: CustomElementRegistry) {
+  class ItemsViewComponentImpl extends HTMLElement
+    implements ItemsViewComponent {
+    peopleUl?: HTMLUListElement;
+    objectsUl?: HTMLUListElement;
+    roomsUl?: HTMLUListElement;
 
-  updateInternalModel(model: ItemsViewModel): void {
-    updateList(this.peopleUl, "people", model.players, model.players);
-    updateList(this.objectsUl, "objects", model.objects, model.players);
-    updateList(this.roomsUl, "rooms", model.rooms, model.players);
-  }
+    constructor() {
+      super();
+    }
 
-  connectedCallback() {
-    this.innerHTML = `
+    update(model: ItemsViewModel): void {
+      updateList(this.peopleUl, "people", model.players, model.players);
+      updateList(this.objectsUl, "objects", model.objects, model.players);
+      updateList(this.roomsUl, "rooms", model.rooms, model.players);
+    }
+
+    connectedCallback() {
+      this.innerHTML = `
 <ul id="people-ul"></ul>
 <ul id="objects-ul"></ul>
 <ul id="rooms-ul"></ul>
 `;
-    this.peopleUl = this.querySelector("people-ul")!;
-    this.objectsUl = this.querySelector("objects-ul")!;
-    this.roomsUl = this.querySelector("rooms-ul")!;
+      this.peopleUl = this.querySelector("people-ul")!;
+      this.objectsUl = this.querySelector("objects-ul")!;
+      this.roomsUl = this.querySelector("rooms-ul")!;
+    }
   }
+  cr.define("items-component", ItemsViewComponentImpl);
 }
 
 function updateList(
@@ -88,25 +94,30 @@ export interface ItemSelectionModel {
   rooms: ItemInfo[];
 }
 
-export class ItemSelectionViewComponent
-  extends BaseComponent<ItemSelectionModel> {
-  personSelection?: HTMLSelectElement;
-  objectSelection?: HTMLSelectElement;
-  roomSelection?: HTMLSelectElement;
-  form?: HTMLFormElement;
+export interface ItemSelectionViewComponent extends HTMLElement {
+  update(model: ItemSelectionModel): void;
+}
 
-  constructor() {
-    super();
-  }
+export function ItemSelectionViewComponentF(cr: CustomElementRegistry) {
+  class ItemSelectionViewComponentImpl extends HTMLElement
+    implements ItemSelectionViewComponent {
+    personSelection?: HTMLSelectElement;
+    objectSelection?: HTMLSelectElement;
+    roomSelection?: HTMLSelectElement;
+    form?: HTMLFormElement;
 
-  updateInternalModel(model: ItemSelectionModel): void {
-    updateSelectionElement(this.personSelection, model.people);
-    updateSelectionElement(this.objectSelection, model.objects);
-    updateSelectionElement(this.roomSelection, model.rooms);
-  }
+    constructor() {
+      super();
+    }
 
-  connectedCallback() {
-    this.innerHTML = `
+    update(model: ItemSelectionModel): void {
+      updateSelectionElement(this.personSelection, model.people);
+      updateSelectionElement(this.objectSelection, model.objects);
+      updateSelectionElement(this.roomSelection, model.rooms);
+    }
+
+    connectedCallback() {
+      this.innerHTML = `
 <form id="itemselectionform">
   <div>
     <div>Person</div>
@@ -132,24 +143,26 @@ export class ItemSelectionViewComponent
 </form>
 `;
 
-    this.personSelection = this.querySelector("#personselection")!;
-    this.objectSelection = this.querySelector("#objectselection")!;
-    this.roomSelection = this.querySelector("#roomselection")!;
-    this.form = this.querySelector("#itemselectionform")!;
+      this.personSelection = this.querySelector("#personselection")!;
+      this.objectSelection = this.querySelector("#objectselection")!;
+      this.roomSelection = this.querySelector("#roomselection")!;
+      this.form = this.querySelector("#itemselectionform")!;
 
-    this.form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      this.dispatchEvent(
-        new CustomEvent<ConfirmDataItemSelection>("itemselectionform", {
-          detail: {
-            person: { label: this.personSelection?.value ?? "undefined" },
-            object: { label: this.objectSelection?.value ?? "undefined" },
-            room: { label: this.roomSelection?.value ?? "undefined" },
-          },
-        }),
-      );
-    });
+      this.form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.dispatchEvent(
+          new CustomEvent<ConfirmDataItemSelection>("itemselectionform", {
+            detail: {
+              person: { label: this.personSelection?.value ?? "undefined" },
+              object: { label: this.objectSelection?.value ?? "undefined" },
+              room: { label: this.roomSelection?.value ?? "undefined" },
+            },
+          }),
+        );
+      });
+    }
   }
+  cr.define("item-selection-component", ItemSelectionViewComponentImpl);
 }
 
 function updateSelectionElement<T extends Element>(
