@@ -1,5 +1,10 @@
 import { getMap } from "./map.ts";
 
+export const boardComponentEvents = {
+  assetsLoaded: "assets-loaded",
+  boardClicked: "board-clicked",
+};
+
 export interface BoardModel {
   players: PlayerBoardModel[];
   selection: BlockBoardMeta[];
@@ -16,7 +21,7 @@ export interface PlayerBoardModel {
   asset: number;
 }
 
-export interface ClickedBoardEvent {
+export interface ClickedBoardEvent extends Event {
   position: [number, number];
 }
 
@@ -68,6 +73,8 @@ export function BoardViewComponentF(cr: CustomElementRegistry) {
       });
 
       await Promise.all(assetLoader.getImages().map((img) => img.decode()));
+
+      this.dispatchEvent(new CustomEvent(boardComponentEvents.assetsLoaded));
     }
 
     draw(model: BoardModel) {
@@ -91,11 +98,14 @@ export function BoardViewComponentF(cr: CustomElementRegistry) {
     }
 
     private dispatchBlockClick(x: number, y: number) {
-      const event = new CustomEvent<ClickedBoardEvent>("blockclicked", {
-        detail: {
-          position: [x, y],
+      const event = new CustomEvent<ClickedBoardEvent>(
+        boardComponentEvents.boardClicked,
+        {
+          detail: {
+            position: [x, y],
+          },
         },
-      });
+      );
       this.dispatchEvent(event);
     }
 

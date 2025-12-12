@@ -1,4 +1,4 @@
-import { GameControllerImpl } from "./controllers/index.ts";
+import { GameServiceImpl } from "./services/index.ts";
 import "./style.css";
 import { AppComponenF, type AppModel } from "./view/app.ts";
 import { BoardViewComponentF, type PlayerBoardModel } from "./view/board.ts";
@@ -78,7 +78,7 @@ const appModel: AppModel = {
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
-AppComponenF(customElements, new GameControllerImpl());
+AppComponenF(customElements, new GameServiceImpl());
 BoardViewComponentF(customElements);
 DiceViewComponentF(customElements);
 ItemsViewComponentF(customElements);

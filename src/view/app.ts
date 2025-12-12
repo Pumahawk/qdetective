@@ -1,21 +1,22 @@
 import type { GameService } from "../services/index.ts";
-import { type BoardModel, type BoardViewComponent } from "./board.ts";
-import { type DiceViewComponent, type DiceViewModel } from "./dice.ts";
 import {
-  type ItemSelectionModel,
+  boardComponentEvents,
+  type BoardViewComponent,
+  type ClickedBoardEvent,
+} from "./board.ts";
+import { diceComponentEvents, type DiceViewComponent } from "./dice.ts";
+import {
   type ItemSelectionViewComponent,
   type ItemsViewComponent,
-  type ItemsViewModel,
 } from "./items.ts";
 
 type PlayerState = "dice" | "move" | "call" | "wait" | "view" | "call-response";
 
 export interface AppModel {
-  playerState: PlayerState;
-  itemSelectionModel: ItemSelectionModel;
-  itemsViewModel: ItemsViewModel;
-  boardModel: BoardModel;
-  diceViewModel: DiceViewModel;
+  gameFase: "play";
+  playFase: "dice" | "move" | "call";
+  showItems: boolean;
+  movements: number;
 }
 
 export interface AppComponent extends HTMLElement {
@@ -32,8 +33,16 @@ export function AppComponenF(
     itemSelectionComponent?: ItemSelectionViewComponent;
     itemsComponent?: ItemsViewComponent;
 
+    appModel: AppModel;
+
     constructor() {
       super();
+      this.appModel = {
+        gameFase: "play",
+        playFase: "dice",
+        showItems: false,
+        movements: 12,
+      };
     }
 
     update(_: AppModel) {
@@ -58,7 +67,107 @@ export function AppComponenF(
       )!;
       this.itemSelectionComponent = this.querySelector<
         ItemSelectionViewComponent
-      >("itemselection-component")!;
+      >("items-selection-component")!;
+
+      this.initDiceComponent();
+      this.initBoardComponent();
+      this.initItemsComponent();
+      this.initGameModel();
+    }
+
+    private initBoardComponent() {
+      this.boardComponent?.addEventListener(
+        boardComponentEvents.assetsLoaded,
+        () => {
+          const model = gameService.initBoardModel();
+          this.boardComponent?.update(model);
+        },
+      );
+      this.boardComponent?.addEventListener(
+        boardComponentEvents.boardClicked,
+        (e) => this.clickOnBoardHandler(e as CustomEvent<ClickedBoardEvent>),
+      );
+    }
+
+    private initItemsComponent() {
+      const model = gameService.initItemComponentModel();
+      console.log("init items component");
+      this.itemsComponent?.update(model);
+    }
+
+    private initGameModel() {
+      this.appModel = gameService.getStartingGame();
+      this.render();
+    }
+
+    private initDiceComponent() {
+      this.diceComponent?.addEventListener(
+        diceComponentEvents.diceRoll,
+        () => this.rollDiceHandler(),
+      );
+    }
+
+    private render() {
+      this.renderDiceComponent();
+      this.renderBoardCompoent();
+      this.renderItemsComponent();
+      this.renderItemSelectionComponent();
+    }
+
+    private renderDiceComponent() {
+      if (!this.isShowDice()) {
+        this.diceComponent?.setAttribute(
+          "hidden",
+          "true",
+        );
+      }
+    }
+
+    private renderBoardCompoent() {
+    }
+
+    private renderItemsComponent() {
+      this.itemsComponent?.setAttribute(
+        "hiddend",
+        this.isShowItems() ? "false" : "true",
+      );
+    }
+
+    private renderItemSelectionComponent() {
+    }
+
+    private rollDiceHandler() {
+      console.log("dice roll");
+      const randValue = gameService.rollDice();
+      this.diceComponent?.update({ dice: randValue });
+      this.appModel.movements = randValue;
+      this.startMoveFase();
+    }
+
+    private clickOnBoardHandler(e: CustomEvent<ClickedBoardEvent>) {
+      if (this.isMoveFase()) {
+        const [x, y] = e.detail.position;
+        const boardModel = gameService.movePlayer(x, y);
+        this.boardComponent?.update(boardModel);
+      }
+    }
+
+    private startMoveFase() {
+      this.appModel.playFase = "move";
+    }
+
+    private isShowDice(): boolean {
+      return this.appModel.gameFase == "play" &&
+        this.appModel.playFase == "dice";
+    }
+
+    private isShowItems(): boolean {
+      return this.appModel.showItems;
+    }
+
+    private isMoveFase(): boolean {
+      return this.appModel.gameFase == "play" &&
+        this.appModel.playFase == "move";
     }
   }
   cr.define("app-component", AppComponentImpl);

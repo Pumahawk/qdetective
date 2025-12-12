@@ -2,6 +2,10 @@ export interface DiceViewModel {
   dice: number | null;
 }
 
+export const diceComponentEvents = {
+  diceRoll: "diceroll",
+};
+
 export interface DiceViewComponent extends Element {
   update(model: DiceViewModel): void;
 }
@@ -26,7 +30,7 @@ export function DiceViewComponentF(cr: CustomElementRegistry) {
 <div id="roll-dice-label"></div>
 `;
       this.querySelector("#roll-dice-button")?.addEventListener("click", () => {
-        this.dispatchEvent(new CustomEvent("rolldice"));
+        this.dispatchEvent(new CustomEvent("diceroll"));
       });
       this.diceNumberElement = this.querySelector("#roll-dice-label")!;
     }

@@ -32,6 +32,7 @@ export function ItemsViewComponentF(cr: CustomElementRegistry) {
       updateList(this.peopleUl, "people", model.players, model.players);
       updateList(this.objectsUl, "objects", model.objects, model.players);
       updateList(this.roomsUl, "rooms", model.rooms, model.players);
+      console.log("update items model");
     }
 
     connectedCallback() {
