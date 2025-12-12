@@ -116,11 +116,17 @@ export function AppComponenF(
     }
 
     private renderDiceComponent() {
+      console.log("render dice");
+      console.log("component model", this.appModel);
       if (!this.isShowDice()) {
+        console.log("is not show dice");
         this.diceComponent?.setAttribute(
           "hidden",
           "true",
         );
+      } else {
+        console.log("is show dice");
+        this.diceComponent?.removeAttribute("hidden");
       }
     }
 
@@ -140,9 +146,8 @@ export function AppComponenF(
 
     private rollDiceHandler() {
       console.log("dice roll");
-      const randValue = appController.rollDice();
-      this.diceComponent?.update({ dice: randValue });
-      this.appModel.movements = randValue;
+      const appModel = appController.rollDice();
+      this.diceComponent?.update({ dice: appModel.movements });
       this.startMoveFase();
     }
 
@@ -155,10 +160,16 @@ export function AppComponenF(
     }
 
     private startMoveFase() {
-      this.appModel.playFase = "move";
+      this.appModel = appController.startMoveFase();
+      this.render();
     }
 
     private isShowDice(): boolean {
+      return true;
+      console.log(
+        this.appModel.gameFase == "play",
+        this.appModel.playFase == "dice",
+      );
       return this.appModel.gameFase == "play" &&
         this.appModel.playFase == "dice";
     }

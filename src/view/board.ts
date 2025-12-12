@@ -21,7 +21,7 @@ export interface PlayerBoardModel {
   asset: number;
 }
 
-export interface ClickedBoardEvent extends Event {
+export interface ClickedBoardEvent {
   position: [number, number];
 }
 
