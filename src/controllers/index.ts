@@ -28,10 +28,8 @@ export class AppController {
     }
 
     if (
-      !((x == activePlayer.position[0] &&
-        Math.abs(y - activePlayer.position[1]) == 1) ||
-        (y == activePlayer.position[1] &&
-          Math.abs(x - activePlayer.position[0]) == 1))
+      Math.abs(y - activePlayer.position[1]) +
+          Math.abs(x - activePlayer.position[0]) != 1
     ) {
       return appModel;
     }
