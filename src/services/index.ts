@@ -1,4 +1,4 @@
-import type { BoardModel, PlayerBoardModel } from "../view/board.ts";
+import type { PlayerBoardModel } from "../view/board.ts";
 import type { AppModel } from "../view/app.ts";
 import type { ItemsViewModel } from "../view/items.ts";
 import { getMap } from "../view/map.ts";
@@ -16,52 +16,43 @@ const plsm: { [id: string]: PlayerBoardModel } = {
 };
 
 export interface GameService {
-  initBoardModel(): BoardModel;
-  getStartingGame(): AppModel;
+  getAppModel(): AppModel;
   initItemComponentModel(): ItemsViewModel;
-  rollDice(): number;
-  movePlayer(x: number, y: number): BoardModel;
 }
 
 export class GameServiceImpl implements GameService {
-  map = getMap();
-  activePlayer = plsm.p8;
-  boardModel: BoardModel = {
-    highlight: [],
-    players: [
-      plsm.p0,
-      plsm.p1,
-      plsm.p2,
-      plsm.p3,
-      plsm.p4,
-      plsm.p5,
-      plsm.p6,
-      plsm.p7,
-      plsm.p8,
-    ],
-    selection: [],
-  };
-  initBoardModel(): BoardModel {
-    return this.boardModel;
-  }
+  appModel: AppModel = {
+    activePlayer: plsm.p8,
 
-  getStartingGame(): AppModel {
-    return {
-      gameFase: "play",
-      playFase: "dice",
-      showItems: false,
-      movements: 12,
-    };
-  }
+    boardModel: {
+      highlight: [],
+      players: [
+        plsm.p0,
+        plsm.p1,
+        plsm.p2,
+        plsm.p3,
+        plsm.p4,
+        plsm.p5,
+        plsm.p6,
+        plsm.p7,
+        plsm.p8,
+      ],
+      selection: [],
+    },
 
-  initItemComponentModel(): ItemsViewModel {
-    return {
+    gameFase: "play",
+    playFase: "dice",
+    showItems: false,
+    movements: 12,
+
+    items: {
       players: [
         { label: "pl1" },
         { label: "pl2" },
         { label: "pl3" },
         { label: "pl4" },
       ],
+
       people: [],
       objects: [
         { label: "corda" },
@@ -71,6 +62,7 @@ export class GameServiceImpl implements GameService {
         { label: "candeliere" },
         { label: "rivoltella" },
       ],
+
       rooms: [
         { label: "Cucina" },
         { label: "Sala da ballo" },
@@ -82,48 +74,18 @@ export class GameServiceImpl implements GameService {
         { label: "Anticamera" },
         { label: "Studio" },
       ],
-    };
+    },
+  };
+  map = getMap();
+  activePlayer = plsm.p8;
+
+  getAppModel(): AppModel {
+    return this.appModel;
   }
 
-  rollDice(): number {
-    return Math.floor(Math.random() * 100) % 12 + 1;
+  initItemComponentModel(): ItemsViewModel {
+    return this.appModel.items;
   }
-
-  movePlayer(x: number, y: number): BoardModel {
-    console.log("X, Y", x, y);
-    const boardModel = this.boardModel;
-
-    if (this.map[y][x] != "x" && this.map[y][x] != "S") {
-      return boardModel;
-    }
-    if (
-      !boardModel.selection.find((s) =>
-        s.position[0] == x && s.position[1] == y
-      )
-    ) {
-      boardModel.selection.push({ position: [x, y] });
-    }
-    this.activePlayer.position = [x, y];
-    boardModel.highlight = findNearBlock(this.map, x, y).filter(
-      (
-        [x, y],
-      ) => this.map[y][x] != " " && !this.map[y][x].startsWith("M"),
-    ).map((
-      // ) => true).map((
-      [x, y],
-    ) => ({
-      position: [x, y],
-    }));
-    return boardModel;
-  }
-}
-
-function findNearBlock(map: string[][], pointX: number, pointY: number) {
-  return [[1, 0], [-1, 0], [0, -1], [0, +1]]
-    .filter(([x, y]) =>
-      pointX + x >= 0 && pointY + y >= 0 &&
-      pointX + x < map[0].length && pointY + y < map.length
-    ).map(([x, y]) => [pointX + x, pointY + y]);
 }
 
 // function findNearValidPlayerBlock(map: string[][], x: number, y: number) {

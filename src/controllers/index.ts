@@ -1,0 +1,52 @@
+import type { AppModel } from "../view/app.ts";
+import { type GameService } from "../services/index.ts";
+import { getMap } from "../view/map.ts";
+
+export class AppController {
+  gameService: GameService;
+  constructor(gameService: GameService) {
+    this.gameService = gameService;
+  }
+  rollDice(): number {
+    return Math.floor(Math.random() * 100) % 12 + 1;
+  }
+
+  movePlayer(x: number, y: number): AppModel {
+    console.log("X, Y", x, y);
+    const appModel = this.gameService.getAppModel();
+    const boardModel = appModel.boardModel;
+    const map = getMap();
+
+    if (map[y][x] != "x" && map[y][x] != "S") {
+      return appModel;
+    }
+
+    if (
+      !boardModel.selection.find((s) =>
+        s.position[0] == x && s.position[1] == y
+      )
+    ) {
+      boardModel.selection.push({ position: [x, y] });
+    }
+    appModel.activePlayer.position = [x, y];
+    boardModel.highlight = findNearBlock(map, x, y).filter(
+      (
+        [x, y],
+      ) => map[y][x] != " " && !map[y][x].startsWith("M"),
+    ).map((
+      // ) => true).map((
+      [x, y],
+    ) => ({
+      position: [x, y],
+    }));
+    return appModel;
+  }
+}
+
+function findNearBlock(map: string[][], pointX: number, pointY: number) {
+  return [[1, 0], [-1, 0], [0, -1], [0, +1]]
+    .filter(([x, y]) =>
+      pointX + x >= 0 && pointY + y >= 0 &&
+      pointX + x < map[0].length && pointY + y < map.length
+    ).map(([x, y]) => [pointX + x, pointY + y]);
+}

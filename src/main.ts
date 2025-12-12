@@ -1,84 +1,89 @@
+import { AppController } from "./controllers/index.ts";
 import { GameServiceImpl } from "./services/index.ts";
 import "./style.css";
-import { AppComponenF, type AppModel } from "./view/app.ts";
-import { BoardViewComponentF, type PlayerBoardModel } from "./view/board.ts";
+import { AppComponenF } from "./view/app.ts";
+import { BoardViewComponentF } from "./view/board.ts";
 import { DiceViewComponentF } from "./view/dice.ts";
 import {
   ItemSelectionViewComponentF,
   ItemsViewComponentF,
 } from "./view/items.ts";
-import { getMap } from "./view/map.ts";
 
-const players: { [id: string]: PlayerBoardModel } = {
-  p0: { id: "p0", position: [0, 0], asset: 0 },
-  p1: { id: "p1", position: [1, 0], asset: 1 },
-  p2: { id: "p2", position: [2, 0], asset: 2 },
-  p3: { id: "p3", position: [0, 17], asset: 3 },
-  p4: { id: "p4", position: [7, 24], asset: 4 },
-  p5: { id: "p5", position: [24, 18], asset: 5 },
-  p6: { id: "p6", position: [24, 6], asset: 6 },
-  p7: { id: "p7", position: [15, 0], asset: 7 },
-  p8: { id: "p8", position: [8, 0], asset: 8 },
-};
+// const players: { [id: string]: PlayerBoardModel } = {
+//   p0: { id: "p0", position: [0, 0], asset: 0 },
+//   p1: { id: "p1", position: [1, 0], asset: 1 },
+//   p2: { id: "p2", position: [2, 0], asset: 2 },
+//   p3: { id: "p3", position: [0, 17], asset: 3 },
+//   p4: { id: "p4", position: [7, 24], asset: 4 },
+//   p5: { id: "p5", position: [24, 18], asset: 5 },
+//   p6: { id: "p6", position: [24, 6], asset: 6 },
+//   p7: { id: "p7", position: [15, 0], asset: 7 },
+//   p8: { id: "p8", position: [8, 0], asset: 8 },
+// };
 
-const appModel: AppModel = {
-  playerState: "wait",
-
-  itemSelectionModel: {
-    people: [],
-    objects: [],
-    rooms: [],
-  },
-
-  itemsViewModel: {
-    players: [
-      { label: "pl1" },
-      { label: "pl2" },
-      { label: "pl3" },
-      { label: "pl4" },
-    ],
-    people: [],
-    objects: [
-      { label: "corda" },
-      { label: "tubo di piombo" },
-      { label: "pugnale" },
-      { label: "chiave inglese" },
-      { label: "candeliere" },
-      { label: "rivoltella" },
-    ],
-    rooms: [
-      { label: "Cucina" },
-      { label: "Sala da ballo" },
-      { label: "Serra" },
-      { label: "Sala da pranzo" },
-      { label: "Sala da biliardo" },
-      { label: "Biblioteca" },
-      { label: "Veranda" },
-      { label: "Anticamera" },
-      { label: "Studio" },
-    ],
-  },
-
-  diceViewModel: {
-    dice: null,
-  },
-
-  boardModel: {
-    players: Object.values(players),
-    selection: [],
-    highlight: findNearValidPlayerBlock(
-      getMap(),
-      players.p8.position[0],
-      players.p8.position[1],
-    ).map((
-      [x, y],
-    ) => ({ position: [x, y] })),
-  },
-};
+// const appModel: AppModel = {
+//   playerState: "wait",
+//
+//   itemSelectionModel: {
+//     people: [],
+//     objects: [],
+//     rooms: [],
+//   },
+//
+//   itemsViewModel: {
+//     players: [
+//       { label: "pl1" },
+//       { label: "pl2" },
+//       { label: "pl3" },
+//       { label: "pl4" },
+//     ],
+//     people: [],
+//     objects: [
+//       { label: "corda" },
+//       { label: "tubo di piombo" },
+//       { label: "pugnale" },
+//       { label: "chiave inglese" },
+//       { label: "candeliere" },
+//       { label: "rivoltella" },
+//     ],
+//     rooms: [
+//       { label: "Cucina" },
+//       { label: "Sala da ballo" },
+//       { label: "Serra" },
+//       { label: "Sala da pranzo" },
+//       { label: "Sala da biliardo" },
+//       { label: "Biblioteca" },
+//       { label: "Veranda" },
+//       { label: "Anticamera" },
+//       { label: "Studio" },
+//     ],
+//   },
+//
+//   diceViewModel: {
+//     dice: null,
+//   },
+//
+//   boardModel: {
+//     players: Object.values(players),
+//     selection: [],
+//     highlight: findNearValidPlayerBlock(
+//       getMap(),
+//       players.p8.position[0],
+//       players.p8.position[1],
+//     ).map((
+//       [x, y],
+//     ) => ({ position: [x, y] })),
+//   },
+// };
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
-AppComponenF(customElements, new GameServiceImpl());
+const gameService = new GameServiceImpl();
+AppComponenF(
+  customElements,
+  gameService,
+  new AppController(gameService),
+);
 BoardViewComponentF(customElements);
 DiceViewComponentF(customElements);
 ItemsViewComponentF(customElements);
@@ -130,19 +135,19 @@ appElement.innerHTML = `
 // );
 //
 
-function findNearBlock(map: string[][], pointX: number, pointY: number) {
-  return [[1, 0], [-1, 0], [0, -1], [0, +1]]
-    .filter(([x, y]) =>
-      pointX + x >= 0 && pointY + y >= 0 &&
-      pointX + x < map[0].length && pointY + y < map.length
-    ).map(([x, y]) => [pointX + x, pointY + y]);
-}
+// function findNearBlock(map: string[][], pointX: number, pointY: number) {
+//   return [[1, 0], [-1, 0], [0, -1], [0, +1]]
+//     .filter(([x, y]) =>
+//       pointX + x >= 0 && pointY + y >= 0 &&
+//       pointX + x < map[0].length && pointY + y < map.length
+//     ).map(([x, y]) => [pointX + x, pointY + y]);
+// }
 
-function findNearValidPlayerBlock(map: string[][], x: number, y: number) {
-  return findNearBlock(map, x, y).filter((
-    [x, y],
-  ) => map[y][x] != " " && !map[y][x].startsWith("M"));
-}
+// function findNearValidPlayerBlock(map: string[][], x: number, y: number) {
+//   return findNearBlock(map, x, y).filter((
+//     [x, y],
+//   ) => map[y][x] != " " && !map[y][x].startsWith("M"));
+// }
 
 //
 // appElement.addEventListener("rolldice", (e) => {

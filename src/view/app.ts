@@ -1,22 +1,27 @@
+import { AppController } from "../controllers/index.ts";
 import type { GameService } from "../services/index.ts";
 import {
   boardComponentEvents,
+  type BoardModel,
   type BoardViewComponent,
   type ClickedBoardEvent,
+  type PlayerBoardModel,
 } from "./board.ts";
 import { diceComponentEvents, type DiceViewComponent } from "./dice.ts";
 import {
   type ItemSelectionViewComponent,
   type ItemsViewComponent,
+  type ItemsViewModel,
 } from "./items.ts";
-
-type PlayerState = "dice" | "move" | "call" | "wait" | "view" | "call-response";
 
 export interface AppModel {
   gameFase: "play";
   playFase: "dice" | "move" | "call";
   showItems: boolean;
   movements: number;
+  boardModel: BoardModel;
+  activePlayer: PlayerBoardModel;
+  items: ItemsViewModel;
 }
 
 export interface AppComponent extends HTMLElement {
@@ -26,6 +31,7 @@ export interface AppComponent extends HTMLElement {
 export function AppComponenF(
   cr: CustomElementRegistry,
   gameService: GameService,
+  appController: AppController,
 ) {
   class AppComponentImpl extends HTMLElement implements AppComponent {
     diceComponent?: DiceViewComponent;
@@ -37,12 +43,7 @@ export function AppComponenF(
 
     constructor() {
       super();
-      this.appModel = {
-        gameFase: "play",
-        playFase: "dice",
-        showItems: false,
-        movements: 12,
-      };
+      this.appModel = gameService.getAppModel();
     }
 
     update(_: AppModel) {
@@ -79,7 +80,7 @@ export function AppComponenF(
       this.boardComponent?.addEventListener(
         boardComponentEvents.assetsLoaded,
         () => {
-          const model = gameService.initBoardModel();
+          const model = gameService.getAppModel().boardModel;
           this.boardComponent?.update(model);
         },
       );
@@ -96,7 +97,7 @@ export function AppComponenF(
     }
 
     private initGameModel() {
-      this.appModel = gameService.getStartingGame();
+      this.appModel = gameService.getAppModel();
       this.render();
     }
 
@@ -124,6 +125,7 @@ export function AppComponenF(
     }
 
     private renderBoardCompoent() {
+      this.boardComponent?.update(this.appModel.boardModel);
     }
 
     private renderItemsComponent() {
@@ -138,7 +140,7 @@ export function AppComponenF(
 
     private rollDiceHandler() {
       console.log("dice roll");
-      const randValue = gameService.rollDice();
+      const randValue = appController.rollDice();
       this.diceComponent?.update({ dice: randValue });
       this.appModel.movements = randValue;
       this.startMoveFase();
@@ -147,8 +149,8 @@ export function AppComponenF(
     private clickOnBoardHandler(e: CustomEvent<ClickedBoardEvent>) {
       if (this.isMoveFase()) {
         const [x, y] = e.detail.position;
-        const boardModel = gameService.movePlayer(x, y);
-        this.boardComponent?.update(boardModel);
+        this.appModel = appController.movePlayer(x, y);
+        this.render();
       }
     }
 
