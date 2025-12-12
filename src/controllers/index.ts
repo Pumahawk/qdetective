@@ -10,7 +10,7 @@ export class AppController {
   }
 
   rollDice(): AppModel {
-    const dice = Math.floor(Math.random() * 100) % 12 + 1;
+    const dice = Math.floor(Math.random() * 100) % 11 + 2;
     const appModel = this.gameService.getAppModel();
     appModel.movements = dice;
     return appModel;
