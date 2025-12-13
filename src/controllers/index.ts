@@ -13,6 +13,8 @@ export class AppController {
     const dice = Math.floor(Math.random() * 100) % 11 + 2;
     const appModel = this.gameService.getAppModel();
     appModel.movements = dice;
+    appModel.diceModel = { dice };
+    this.startMoveFase();
     return appModel;
   }
 

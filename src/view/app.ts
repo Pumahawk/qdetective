@@ -7,7 +7,11 @@ import {
   type ClickedBoardEvent,
   type PlayerBoardModel,
 } from "./board.ts";
-import { diceComponentEvents, type DiceViewComponent } from "./dice.ts";
+import {
+  diceComponentEvents,
+  type DiceViewComponent,
+  type DiceViewModel,
+} from "./dice.ts";
 import {
   type ItemSelectionViewComponent,
   type ItemsViewComponent,
@@ -19,6 +23,7 @@ export interface AppModel {
   playFase: "dice" | "move" | "call";
   showItems: boolean;
   movements: number;
+  diceModel: DiceViewModel;
   boardModel: BoardModel;
   activePlayer: PlayerBoardModel;
   items: ItemsViewModel;
@@ -121,6 +126,7 @@ export function AppComponenF(
         console.log("is show dice");
         this.diceComponent?.removeAttribute("hidden");
       }
+      this.diceComponent?.update(appModel.diceModel);
     }
 
     private renderBoardCompoent(appModel: AppModel) {
@@ -140,18 +146,12 @@ export function AppComponenF(
     private rollDiceHandler() {
       console.log("dice roll");
       const appModel = appController.rollDice();
-      this.diceComponent?.update({ dice: appModel.movements });
-      this.startMoveFase();
+      this.render(appModel);
     }
 
     private clickOnBoardHandler(e: CustomEvent<ClickedBoardEvent>) {
       const [x, y] = e.detail.position;
       const appModel = appController.clickOnBoard(x, y);
-      this.render(appModel);
-    }
-
-    private startMoveFase() {
-      const appModel = appController.startMoveFase();
       this.render(appModel);
     }
 
