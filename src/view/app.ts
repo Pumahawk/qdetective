@@ -25,7 +25,6 @@ export interface AppModel {
 }
 
 export interface AppComponent extends HTMLElement {
-  update(mode: AppModel): void;
 }
 
 export function AppComponenF(
@@ -39,14 +38,8 @@ export function AppComponenF(
     itemSelectionComponent?: ItemSelectionViewComponent;
     itemsComponent?: ItemsViewComponent;
 
-    appModel: AppModel;
-
     constructor() {
       super();
-      this.appModel = gameService.getAppModel();
-    }
-
-    update(_: AppModel) {
     }
 
     connectedCallback() {
@@ -97,8 +90,8 @@ export function AppComponenF(
     }
 
     private initGameModel() {
-      this.appModel = gameService.getAppModel();
-      this.render();
+      const appModel = gameService.getAppModel();
+      this.render(appModel);
     }
 
     private initDiceComponent() {
@@ -108,17 +101,17 @@ export function AppComponenF(
       );
     }
 
-    private render() {
-      this.renderDiceComponent();
-      this.renderBoardCompoent();
-      this.renderItemsComponent();
-      this.renderItemSelectionComponent();
+    private render(appModel: AppModel) {
+      this.renderDiceComponent(appModel);
+      this.renderBoardCompoent(appModel);
+      this.renderItemsComponent(appModel);
+      this.renderItemSelectionComponent(appModel);
     }
 
-    private renderDiceComponent() {
+    private renderDiceComponent(appModel: AppModel) {
       console.log("render dice");
-      console.log("component model", this.appModel);
-      if (!this.isShowDice()) {
+      console.log("component model", appModel);
+      if (!isShowDice(appModel)) {
         console.log("is not show dice");
         this.diceComponent?.setAttribute(
           "hidden",
@@ -130,18 +123,18 @@ export function AppComponenF(
       }
     }
 
-    private renderBoardCompoent() {
-      this.boardComponent?.update(this.appModel.boardModel);
+    private renderBoardCompoent(appModel: AppModel) {
+      this.boardComponent?.update(appModel.boardModel);
     }
 
-    private renderItemsComponent() {
+    private renderItemsComponent(appModel: AppModel) {
       this.itemsComponent?.setAttribute(
         "hiddend",
-        this.isShowItems() ? "false" : "true",
+        this.isShowItems(appModel) ? "false" : "true",
       );
     }
 
-    private renderItemSelectionComponent() {
+    private renderItemSelectionComponent(_: AppModel) {
     }
 
     private rollDiceHandler() {
@@ -152,36 +145,24 @@ export function AppComponenF(
     }
 
     private clickOnBoardHandler(e: CustomEvent<ClickedBoardEvent>) {
-      if (this.isMoveFase()) {
-        const [x, y] = e.detail.position;
-        this.appModel = appController.movePlayer(x, y);
-        this.render();
-      }
+      const [x, y] = e.detail.position;
+      const appModel = appController.clickOnBoard(x, y);
+      this.render(appModel);
     }
 
     private startMoveFase() {
-      this.appModel = appController.startMoveFase();
-      this.render();
+      const appModel = appController.startMoveFase();
+      this.render(appModel);
     }
 
-    private isShowDice(): boolean {
-      return true;
-      console.log(
-        this.appModel.gameFase == "play",
-        this.appModel.playFase == "dice",
-      );
-      return this.appModel.gameFase == "play" &&
-        this.appModel.playFase == "dice";
-    }
-
-    private isShowItems(): boolean {
-      return this.appModel.showItems;
-    }
-
-    private isMoveFase(): boolean {
-      return this.appModel.gameFase == "play" &&
-        this.appModel.playFase == "move";
+    private isShowItems(appModel: AppModel): boolean {
+      return appModel.showItems;
     }
   }
   cr.define("app-component", AppComponentImpl);
+}
+
+function isShowDice(appModel: AppModel): boolean {
+  return appModel.gameFase == "play" &&
+    appModel.playFase == "dice";
 }

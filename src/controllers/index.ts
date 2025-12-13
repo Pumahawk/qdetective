@@ -16,6 +16,14 @@ export class AppController {
     return appModel;
   }
 
+  clickOnBoard(x: number, y: number): AppModel {
+    const appModel = this.gameService.getAppModel();
+    if (isMoveFase(appModel)) {
+      return this.movePlayer(x, y);
+    }
+    return appModel;
+  }
+
   movePlayer(x: number, y: number): AppModel {
     console.log("X, Y", x, y);
     const appModel = this.gameService.getAppModel();
@@ -46,9 +54,7 @@ export class AppController {
     }
     appModel.activePlayer.position = [x, y];
     appModel.movements--;
-    boardModel.highlight = appModel.movements > 0
-      ? findNearBlockBoard(map, x, y)
-      : [];
+    boardModel.highlight = findHighlightBlock(appModel, map, x, y);
     return appModel;
   }
 
@@ -88,4 +94,18 @@ function findNearBlockBoard(
   ) => ({
     position: [x, y],
   }));
+}
+
+function findHighlightBlock(
+  appModel: AppModel,
+  map: string[][],
+  x: number,
+  y: number,
+) {
+  return appModel.movements > 0 ? findNearBlockBoard(map, x, y) : [];
+}
+
+function isMoveFase(appModel: AppModel): boolean {
+  return appModel.gameFase == "play" &&
+    appModel.playFase == "move";
 }
