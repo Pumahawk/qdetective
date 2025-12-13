@@ -16,6 +16,7 @@ import {
   type ItemSelectionViewComponent,
   type ItemsViewComponent,
   type ItemsViewModel,
+  type ItemToShowViewComponent,
 } from "./items.ts";
 
 export interface ItemsSelectedModel {
@@ -35,6 +36,8 @@ export interface AppModel {
   callPlayerId: string | null;
   items: ItemsViewModel;
   itemSelected: ItemsSelectedModel | null;
+  itemShowed: string | null;
+  itemsToShow: string[];
 }
 
 export interface AppComponent extends HTMLElement {
@@ -49,6 +52,7 @@ export function AppComponenF(
     diceComponent?: DiceViewComponent;
     boardComponent?: BoardViewComponent;
     itemSelectionComponent?: ItemSelectionViewComponent;
+    itemToShowComponent?: ItemToShowViewComponent;
     itemsComponent?: ItemsViewComponent;
 
     constructor() {
@@ -61,6 +65,7 @@ export function AppComponenF(
 <board-component></board-component>
 <item-selection-component></item-selection-component>
 <items-component></items-component>
+<items-to-show></items-to-show>
 `;
 
       this.diceComponent = this.querySelector<DiceViewComponent>(
@@ -77,6 +82,7 @@ export function AppComponenF(
       this.initBoardComponent();
       this.initItemsComponent();
       this.initItemsSelectionComponent();
+      this.initItemToShowComponent();
       this.initGameModel();
     }
 
@@ -116,6 +122,15 @@ export function AppComponenF(
       );
     }
 
+    private initItemToShowComponent() {
+      this.itemToShowComponent = this.querySelector<
+        ItemToShowViewComponent
+      >("items-to-show")!;
+      this.itemToShowComponent.onitemsubmit = (id) => {
+        console.log("item id selected", id);
+      };
+    }
+
     private initGameModel() {
       const appModel = gameService.getAppModel();
       this.render(appModel);
@@ -133,6 +148,7 @@ export function AppComponenF(
       this.renderBoardCompoent(appModel);
       this.renderItemsComponent(appModel);
       this.renderItemSelectionComponent(appModel);
+      this.renderItemToShow(appModel);
     }
 
     private renderDiceComponent(appModel: AppModel) {
@@ -163,6 +179,10 @@ export function AppComponenF(
     }
 
     private renderItemSelectionComponent(_: AppModel) {
+    }
+
+    private renderItemToShow(appModel: AppModel) {
+      this.itemToShowComponent?.update({ items: appModel.itemsToShow });
     }
 
     private rollDiceHandler() {

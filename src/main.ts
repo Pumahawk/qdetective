@@ -7,6 +7,7 @@ import { DiceViewComponentF } from "./view/dice.ts";
 import {
   ItemSelectionViewComponentF,
   ItemsViewComponentF,
+  ItemToShowViewComponentF,
 } from "./view/items.ts";
 
 // const players: { [id: string]: PlayerBoardModel } = {
@@ -79,15 +80,19 @@ import {
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
 const gameService = new GameServiceImpl();
+const gameController = new AppController(gameService);
+
 AppComponenF(
   customElements,
   gameService,
-  new AppController(gameService),
+  gameController,
 );
+
 BoardViewComponentF(customElements);
 DiceViewComponentF(customElements);
 ItemsViewComponentF(customElements);
 ItemSelectionViewComponentF(customElements);
+ItemToShowViewComponentF(customElements);
 
 appElement.innerHTML = `
 <app-component></app-component>

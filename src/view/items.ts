@@ -185,3 +185,61 @@ function itemInfoToOptionElement(i: number, item: ItemInfo): HTMLOptionElement {
   option.innerText = item.label;
   return option;
 }
+
+export interface ItemToShowViewComponent extends HTMLElement {
+  update(model: ItemToShowModel): void;
+  onitemsubmit: (id: string) => void;
+}
+
+export interface ItemToShowModel {
+  items: string[];
+}
+
+export function ItemToShowViewComponentF(cr: CustomElementRegistry) {
+  class ItemToShowViewComponentImpl extends HTMLElement
+    implements ItemToShowViewComponent {
+    selectElement: HTMLElement | undefined;
+
+    onitemsubmit = (_: string) => {};
+
+    constructor() {
+      super();
+    }
+
+    update(model: ItemToShowModel): void {
+      console.log("Items to show update", model);
+      console.log("Select element", this.selectElement);
+      this.selectElement?.replaceChildren();
+      model.items.map((id) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.innerText = id;
+        return option;
+      }).forEach((option) => this.selectElement?.appendChild(option));
+    }
+
+    connectedCallback() {
+      if (!this.shadowRoot) {
+        const shadowRoot = this.attachShadow({ mode: "open" });
+        shadowRoot.innerHTML = `
+<form>
+  <select name="item"></select>
+  <button type="submit">Submit</button>
+</form>
+`;
+
+        const form = shadowRoot.querySelector("form")!;
+        form.onsubmit = (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const itemId = formData.get("item")?.toString();
+          this.onitemsubmit(itemId!);
+        };
+
+        this.selectElement = this.shadowRoot!.querySelector("select")!;
+      }
+    }
+  }
+
+  cr.define("items-to-show", ItemToShowViewComponentImpl);
+}

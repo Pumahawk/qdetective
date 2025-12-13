@@ -26,6 +26,8 @@ export class GameServiceImpl implements GameService {
     callPlayerId: null,
     activePlayerId: plsm.p8.id,
     itemSelected: null,
+    itemShowed: null,
+    itemsToShow: [],
 
     diceModel: {
       dice: 0,
