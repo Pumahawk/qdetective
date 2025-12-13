@@ -5,7 +5,6 @@ import {
   type BoardModel,
   type BoardViewComponent,
   type ClickedBoardEvent,
-  type PlayerBoardModel,
 } from "./board.ts";
 import {
   diceComponentEvents,
@@ -13,10 +12,17 @@ import {
   type DiceViewModel,
 } from "./dice.ts";
 import {
+  type ConfirmDataItemSelection,
   type ItemSelectionViewComponent,
   type ItemsViewComponent,
   type ItemsViewModel,
 } from "./items.ts";
+
+export interface ItemsSelectedModel {
+  person: string;
+  object: string;
+  room: string;
+}
 
 export interface AppModel {
   gameFase: "play";
@@ -25,8 +31,10 @@ export interface AppModel {
   movements: number;
   diceModel: DiceViewModel;
   boardModel: BoardModel;
-  activePlayer: PlayerBoardModel;
+  activePlayerId: string;
+  callPlayerId: string | null;
   items: ItemsViewModel;
+  itemSelected: ItemsSelectedModel | null;
 }
 
 export interface AppComponent extends HTMLElement {
@@ -64,13 +72,11 @@ export function AppComponenF(
       this.itemsComponent = this.querySelector<ItemsViewComponent>(
         "items-component",
       )!;
-      this.itemSelectionComponent = this.querySelector<
-        ItemSelectionViewComponent
-      >("items-selection-component")!;
 
       this.initDiceComponent();
       this.initBoardComponent();
       this.initItemsComponent();
+      this.initItemsSelectionComponent();
       this.initGameModel();
     }
 
@@ -92,6 +98,22 @@ export function AppComponenF(
       const model = gameService.initItemComponentModel();
       console.log("init items component");
       this.itemsComponent?.update(model);
+    }
+
+    private initItemsSelectionComponent() {
+      this.itemSelectionComponent = this.querySelector<
+        ItemSelectionViewComponent
+      >("item-selection-component")!;
+      console.log("register");
+      this.itemSelectionComponent.addEventListener(
+        "itemselectionform",
+        (event) => {
+          console.log("itemselectionform");
+          appController.submitItemSelection(
+            (event as CustomEvent<ConfirmDataItemSelection>).detail,
+          );
+        },
+      );
     }
 
     private initGameModel() {

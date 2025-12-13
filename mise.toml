@@ -3,3 +3,6 @@ node = "25.1.0"
 
 [tasks.run]
 run = "npm run dev"
+
+[tasks.errors]
+run = "npx tsc --noEmit"

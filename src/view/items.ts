@@ -149,6 +149,8 @@ export function ItemSelectionViewComponentF(cr: CustomElementRegistry) {
       this.roomSelection = this.querySelector("#roomselection")!;
       this.form = this.querySelector("#itemselectionform")!;
 
+      console.log("reigsterform");
+
       this.form.addEventListener("submit", (e) => {
         e.preventDefault();
         this.dispatchEvent(

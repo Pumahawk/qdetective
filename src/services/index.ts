@@ -18,11 +18,18 @@ const plsm: { [id: string]: PlayerBoardModel } = {
 export interface GameService {
   getAppModel(): AppModel;
   initItemComponentModel(): ItemsViewModel;
+  getActivePlayer(id: string): PlayerBoardModel;
 }
 
 export class GameServiceImpl implements GameService {
   appModel: AppModel = {
-    activePlayer: plsm.p8,
+    callPlayerId: null,
+    activePlayerId: plsm.p8.id,
+    itemSelected: null,
+
+    diceModel: {
+      dice: 0,
+    },
 
     boardModel: {
       highlight: [],
@@ -85,6 +92,14 @@ export class GameServiceImpl implements GameService {
 
   initItemComponentModel(): ItemsViewModel {
     return this.appModel.items;
+  }
+
+  getActivePlayer(id: string): PlayerBoardModel {
+    const activePlayer = Object.values(plsm).find((p) => p.id == id);
+    if (!activePlayer) {
+      throw new Error("invalid error player id: " + id);
+    }
+    return activePlayer;
   }
 }
 

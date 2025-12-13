@@ -2,6 +2,7 @@ import type { AppModel } from "../view/app.ts";
 import { type GameService } from "../services/index.ts";
 import { getMap } from "../view/map.ts";
 import type { BlockBoardMeta } from "../view/board.ts";
+import type { ConfirmDataItemSelection } from "../view/items.ts";
 
 export class AppController {
   gameService: GameService;
@@ -21,7 +22,23 @@ export class AppController {
   clickOnBoard(x: number, y: number): AppModel {
     const appModel = this.gameService.getAppModel();
     if (isMoveFase(appModel)) {
-      return this.movePlayer(x, y);
+      const movedlPlayerModel = this.movePlayer(x, y);
+      if (movedlPlayerModel.movements == 0) {
+        return this.startSelectionItemFase();
+      }
+    }
+    return appModel;
+  }
+
+  submitItemSelection(selectedItems: ConfirmDataItemSelection): AppModel {
+    const appModel = this.gameService.getAppModel();
+    if (isSelectionFase(appModel)) {
+      appModel.itemSelected = {
+        person: selectedItems.person.label,
+        object: selectedItems.object.label,
+        room: selectedItems.room.label,
+      };
+      console.log("Set items.", appModel.itemSelected);
     }
     return appModel;
   }
@@ -31,7 +48,13 @@ export class AppController {
     const appModel = this.gameService.getAppModel();
     const boardModel = appModel.boardModel;
     const map = getMap();
-    const activePlayer = appModel.activePlayer;
+
+    const activePlayer = this.gameService.getActivePlayer(
+      appModel.activePlayerId,
+    );
+    if (!activePlayer) {
+      throw new Error("invalid error player id: " + appModel.activePlayerId);
+    }
 
     if (appModel.movements <= 0) {
       return appModel;
@@ -54,7 +77,7 @@ export class AppController {
     ) {
       boardModel.selection.push({ position: [x, y] });
     }
-    appModel.activePlayer.position = [x, y];
+    activePlayer.position = [x, y];
     appModel.movements--;
     boardModel.highlight = findHighlightBlock(appModel, map, x, y);
     return appModel;
@@ -63,12 +86,21 @@ export class AppController {
   startMoveFase(): AppModel {
     const appModel = this.gameService.getAppModel();
     const boardModel = appModel.boardModel;
+    const activePlayer = this.gameService.getActivePlayer(
+      appModel.activePlayerId,
+    );
     appModel.playFase = "move";
     boardModel.highlight = findNearBlockBoard(
       getMap(),
-      appModel.activePlayer.position[0],
-      appModel.activePlayer.position[1],
+      activePlayer.position[0],
+      activePlayer.position[1],
     );
+    return appModel;
+  }
+
+  startSelectionItemFase(): AppModel {
+    const appModel = this.gameService.getAppModel();
+    appModel.playFase = "call";
     return appModel;
   }
 }
@@ -110,4 +142,8 @@ function findHighlightBlock(
 function isMoveFase(appModel: AppModel): boolean {
   return appModel.gameFase == "play" &&
     appModel.playFase == "move";
+}
+
+function isSelectionFase(appModel: AppModel) {
+  return appModel.gameFase == "play" && appModel.playFase == "call";
 }
