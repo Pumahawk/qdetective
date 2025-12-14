@@ -1,14 +1,5 @@
-import { AppController } from "./controllers/index.ts";
-import { GameServiceImpl } from "./services/index.ts";
+import { ServerSetupComponentF } from "./components/ServerSetupComponent.ts";
 import "./style.css";
-import { AppComponenF } from "./view/app.ts";
-import { BoardViewComponentF } from "./view/board.ts";
-import { DiceViewComponentF } from "./view/dice.ts";
-import {
-  ItemSelectionViewComponentF,
-  ItemsViewComponentF,
-  ItemToShowViewComponentF,
-} from "./view/items.ts";
 
 // const players: { [id: string]: PlayerBoardModel } = {
 //   p0: { id: "p0", position: [0, 0], asset: 0 },
@@ -77,25 +68,12 @@ import {
 //   },
 // };
 
+ServerSetupComponentF(customElements);
+
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
-const gameService = new GameServiceImpl();
-const gameController = new AppController(gameService);
-
-AppComponenF(
-  customElements,
-  gameService,
-  gameController,
-);
-
-BoardViewComponentF(customElements);
-DiceViewComponentF(customElements);
-ItemsViewComponentF(customElements);
-ItemSelectionViewComponentF(customElements);
-ItemToShowViewComponentF(customElements);
-
 appElement.innerHTML = `
-<app-component></app-component>
+<app-serversetupcomponent />
 `;
 
 // const appComponent = document.querySelector("app-component")!;
