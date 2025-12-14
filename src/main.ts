@@ -1,4 +1,8 @@
 import {
+  type GameInfoComponent,
+  GameInfoComponentF,
+} from "./components/GameInfoComponent.ts";
+import {
   type GameListComponent,
   GameListComponentF,
 } from "./components/GameListComponent.ts";
@@ -79,6 +83,7 @@ import "./style.css";
 ServerSetupComponentF(customElements);
 GameListComponentF(customElements);
 GameSetupComponentF(customElements);
+GameInfoComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -106,12 +111,18 @@ appElement.innerHTML = `
 <div class="cplist">
   <div class="cpheader">app-game-list</div>
   <app-game-list class="cp"></app-game-list>
+
   <div class="cpheader">app-server-setup</div>
   <app-server-setup class="cp"></app-server-setup>
+
   <div class="cpheader">app-server-setup</div>
   <app-server-setup class="cp"></app-server-setup>
+
   <div class="cpheader">game-setup</div>
   <game-setup class="cp"></game-setup>
+
+  <div class="cpheader">app-game-info</div>
+  <app-game-info class="cp" name="firt game"></app-game-info>
 </div>
 `;
 
@@ -132,6 +143,22 @@ gameList!.onOpenGame = (id) => {
 const gameSetup = document.querySelector<GameSetupComponent>("game-setup")!;
 gameSetup.onConfirm = () => {
   console.log("Confirmation user");
+};
+
+const gameInfo = document.querySelector<GameInfoComponent>("app-game-info")!;
+gameInfo.update({
+  players: [
+    { label: "player-1" },
+    { label: "player-2" },
+  ],
+});
+
+gameInfo.onJoin = () => {
+  console.log("On join event");
+};
+
+gameInfo.onShare = () => {
+  console.log("On share event");
 };
 
 // const appComponent = document.querySelector("app-component")!;
