@@ -1,3 +1,7 @@
+import {
+  type GameListComponent,
+  GameListComponentF,
+} from "./components/GameListComponent.ts";
 import { ServerSetupComponentF } from "./components/ServerSetupComponent.ts";
 import "./style.css";
 
@@ -69,12 +73,28 @@ import "./style.css";
 // };
 
 ServerSetupComponentF(customElements);
+GameListComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
 appElement.innerHTML = `
-<app-server-setup />
+<app-game-list></app-game-list>
+<app-server-setup></app-server-setup>
 `;
+
+const gameList = document.querySelector<GameListComponent>("app-game-list");
+gameList?.update({
+  games: [
+    { id: "1", label: "First game" },
+  ],
+});
+
+gameList!.onNewGameAction = () => {
+  console.log("Start new game action");
+};
+gameList!.onOpenGame = (id) => {
+  console.log("Open game", id);
+};
 
 // const appComponent = document.querySelector("app-component")!;
 

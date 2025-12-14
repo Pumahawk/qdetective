@@ -1,8 +1,7 @@
 const inputTextName = "server-address";
-type OnServerSelected = (address: string) => void;
 
 export interface ServerSetupComponent {
-  onServerSelected: OnServerSelected;
+  onServerSelected: (address: string) => void;
 }
 
 export function ServerSetupComponentF(cr: CustomElementRegistry) {
