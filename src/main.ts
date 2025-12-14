@@ -1,4 +1,8 @@
 import {
+  type CallStatusComponent,
+  CallStatusComponentF,
+} from "./components/CallStatusComponent.ts";
+import {
   type DiceRollComponent,
   DiceRollComponentF,
 } from "./components/DiceRollComponent.ts";
@@ -94,6 +98,7 @@ GameSetupComponentF(customElements);
 GameInfoComponentF(customElements);
 DiceRollComponentF(customElements);
 ItemSelectionComponentF(customElements);
+CallStatusComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -139,6 +144,9 @@ appElement.innerHTML = `
 
   <div class="cpheader">app-item-selection</div>
   <app-item-selection class="cp"></app-item-selection>
+
+  <div class="cpheader">app-call-status</div>
+  <app-call-status class="cp"></app-call-status>
 </div>
 `;
 
@@ -204,74 +212,19 @@ itemSelectionElement.onConfirm = (e) => {
   console.log("elements selected", e);
 };
 
-// const appComponent = document.querySelector("app-component")!;
+const callStatus = document.querySelector<CallStatusComponent>(
+  "app-call-status",
+)!;
 
-// const map = getMap();
-//
-// appElement.addEventListener(
-//   "blockclicked",
-//   (event) => {
-//     const pos = (event as CustomEvent<ClickedBoardEvent>).detail.position;
-//     const [x, y] = pos;
-//     console.log("X, Y", x, y);
-//     if (
-//       !appModel.boardModel.highlight.map((b) => b.position).find(([xh, yh]) =>
-//         xh == x && yh == y
-//       )
-//     ) {
-//       return;
-//     }
-//     if (map[y][x] != "x" && map[y][x] != "S") {
-//       return;
-//     }
-//     if (
-//       !appModel.boardModel.selection.find((s) =>
-//         s.position[0] == x && s.position[1] == y
-//       )
-//     ) {
-//       appModel.boardModel.selection.push({ position: [x, y] });
-//     }
-//     players.p8.position = [x, y];
-//     appModel.boardModel.players = Object.values(players);
-//     appModel.boardModel.highlight = findNearBlock(map, pos[0], pos[1]).filter((
-//       [x, y],
-//     ) => map[y][x] != " " && !map[y][x].startsWith("M")).map((
-//       // ) => true).map((
-//       [x, y],
-//     ) => ({
-//       position: [x, y],
-//     }));
-//     appComponent.update(appModel);
-//   },
-// );
-//
+callStatus?.update({
+  item: undefined,
+  players: [
+    { id: "player1", status: 0 },
+    { id: "player2", status: 1 },
+    { id: "player2", status: 2 },
+  ],
+});
 
-// function findNearBlock(map: string[][], pointX: number, pointY: number) {
-//   return [[1, 0], [-1, 0], [0, -1], [0, +1]]
-//     .filter(([x, y]) =>
-//       pointX + x >= 0 && pointY + y >= 0 &&
-//       pointX + x < map[0].length && pointY + y < map.length
-//     ).map(([x, y]) => [pointX + x, pointY + y]);
-// }
-
-// function findNearValidPlayerBlock(map: string[][], x: number, y: number) {
-//   return findNearBlock(map, x, y).filter((
-//     [x, y],
-//   ) => map[y][x] != " " && !map[y][x].startsWith("M"));
-// }
-
-//
-// appElement.addEventListener("rolldice", (e) => {
-//   console.log("roll dice", e);
-//   const value = Math.floor(Math.random() * 100 % 12 + 1);
-//   appModel.diceViewModel = { dice: value };
-//   appComponent.update(appModel);
-// });
-//
-// appElement.addEventListener(
-//   "itemselectionform",
-//   (e) => {
-//     const detail = (e as CustomEvent<ConfirmDataItemSelectionComponent>).detail;
-//     console.log("Item selected event component", e, detail);
-//   },
-// );
+callStatus.onContinue = () => {
+  console.log("Continue action");
+};
