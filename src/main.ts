@@ -27,9 +27,12 @@ import {
   ItemSelectionComponentF,
 } from "./components/ItemSelectionComponent.ts";
 import { ServerSetupComponentF } from "./components/ServerSetupComponent.ts";
+import { AppService } from "./services/AppService.ts";
+
+const appService = new AppService();
 
 ServerSetupComponentF(customElements);
-GameListComponentF(customElements);
+GameListComponentF(customElements, appService);
 GameSetupComponentF(customElements);
 GameInfoComponentF(customElements);
 DiceRollComponentF(customElements);
@@ -106,6 +109,9 @@ gameList!.onOpenGame = (id) => {
 
 const gameSetup = document.querySelector<GameSetupComponent>("game-setup")!;
 gameSetup.onConfirm = () => {
+  appService.createGame("testing-game").then((r) =>
+    console.log("response: ", r)
+  );
   console.log("Confirmation user");
 };
 
