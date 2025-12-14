@@ -26,7 +26,7 @@ export interface ItemsSelectedModel {
 }
 
 export interface AppModel {
-  gameFase: "play";
+  gameFase: "play" | "item-selection";
   playFase: "dice" | "move" | "call";
   showItems: boolean;
   movements: number;
@@ -127,7 +127,7 @@ export function AppComponenF(
         ItemToShowViewComponent
       >("items-to-show")!;
       this.itemToShowComponent.onitemsubmit = (id) => {
-        console.log("item id selected", id);
+        appController.submitItemToShow(id);
       };
     }
 

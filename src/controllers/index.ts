@@ -43,6 +43,12 @@ export class AppController {
     return appModel;
   }
 
+  submitItemToShow(_: string) {
+    const appModel = this.gameService.getAppModel();
+    if (appModel.gameFase == "item-selection") {
+    }
+  }
+
   movePlayer(x: number, y: number): AppModel {
     console.log("X, Y", x, y);
     const appModel = this.gameService.getAppModel();
