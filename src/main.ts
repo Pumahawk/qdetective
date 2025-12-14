@@ -73,7 +73,7 @@ ServerSetupComponentF(customElements);
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
 appElement.innerHTML = `
-<app-serversetupcomponent />
+<app-server-setup />
 `;
 
 // const appComponent = document.querySelector("app-component")!;
