@@ -1,6 +1,5 @@
 const playerAssetSize = 16;
 const scale = 3;
-export interface GameSetupModel {}
 
 export interface GameSetupComponent extends HTMLElement {
   onConfirm(): void;

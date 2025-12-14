@@ -1,4 +1,8 @@
 import {
+  type DiceRollComponent,
+  DiceRollComponentF,
+} from "./components/DiceRollComponent.ts";
+import {
   type GameInfoComponent,
   GameInfoComponentF,
 } from "./components/GameInfoComponent.ts";
@@ -84,6 +88,7 @@ ServerSetupComponentF(customElements);
 GameListComponentF(customElements);
 GameSetupComponentF(customElements);
 GameInfoComponentF(customElements);
+DiceRollComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -123,6 +128,9 @@ appElement.innerHTML = `
 
   <div class="cpheader">app-game-info</div>
   <app-game-info class="cp" name="firt game"></app-game-info>
+
+  <div class="cpheader">app-dice-roll</div>
+  <app-dice-roll class="cp" dice-number="12"></app-dice-roll>
 </div>
 `;
 
@@ -159,6 +167,13 @@ gameInfo.onJoin = () => {
 
 gameInfo.onShare = () => {
   console.log("On share event");
+};
+
+const diceRollElement = document.querySelector<DiceRollComponent>(
+  "app-dice-roll",
+)!;
+diceRollElement.onConfirm = () => {
+  console.log("Dice roll on confirm");
 };
 
 // const appComponent = document.querySelector("app-component")!;
