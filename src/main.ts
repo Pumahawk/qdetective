@@ -14,6 +14,10 @@ import {
   type GameSetupComponent,
   GameSetupComponentF,
 } from "./components/GameSetupComponent.ts";
+import {
+  type ItemSelectionComponent,
+  ItemSelectionComponentF,
+} from "./components/ItemSelectionComponent.ts";
 import { ServerSetupComponentF } from "./components/ServerSetupComponent.ts";
 import "./style.css";
 
@@ -89,6 +93,7 @@ GameListComponentF(customElements);
 GameSetupComponentF(customElements);
 GameInfoComponentF(customElements);
 DiceRollComponentF(customElements);
+ItemSelectionComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -131,6 +136,9 @@ appElement.innerHTML = `
 
   <div class="cpheader">app-dice-roll</div>
   <app-dice-roll class="cp" dice-number="12"></app-dice-roll>
+
+  <div class="cpheader">app-item-selection</div>
+  <app-item-selection class="cp"></app-item-selection>
 </div>
 `;
 
@@ -174,6 +182,26 @@ const diceRollElement = document.querySelector<DiceRollComponent>(
 )!;
 diceRollElement.onConfirm = () => {
   console.log("Dice roll on confirm");
+};
+
+const itemSelectionElement = document.querySelector<ItemSelectionComponent>(
+  "app-item-selection",
+)!;
+itemSelectionElement.update({
+  groups: [
+    { id: "group1", items: [{ id: "card1", label: "Firt card" }] },
+    {
+      id: "group2",
+      items: [{ id: "card2", label: "Second card" }, {
+        id: "card3",
+        label: "Plus card",
+      }],
+    },
+  ],
+});
+
+itemSelectionElement.onConfirm = (e) => {
+  console.log("elements selected", e);
 };
 
 // const appComponent = document.querySelector("app-component")!;
