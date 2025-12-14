@@ -2,6 +2,10 @@ import {
   type GameListComponent,
   GameListComponentF,
 } from "./components/GameListComponent.ts";
+import {
+  type GameSetupComponent,
+  GameSetupComponentF,
+} from "./components/GameSetupComponent.ts";
 import { ServerSetupComponentF } from "./components/ServerSetupComponent.ts";
 import "./style.css";
 
@@ -74,12 +78,41 @@ import "./style.css";
 
 ServerSetupComponentF(customElements);
 GameListComponentF(customElements);
+GameSetupComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
 appElement.innerHTML = `
-<app-game-list></app-game-list>
-<app-server-setup></app-server-setup>
+<style>
+.cplist {
+  display: flex; 
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.cp {
+  width: fit-content;
+  margin-bottom: 20px;
+}
+
+.cpheader {
+  padding: 5px;
+  background: red;
+  margin-bottom: 20px;
+}
+</style>
+
+<div class="cplist">
+  <div class="cpheader">app-game-list</div>
+  <app-game-list class="cp"></app-game-list>
+  <div class="cpheader">app-server-setup</div>
+  <app-server-setup class="cp"></app-server-setup>
+  <div class="cpheader">app-server-setup</div>
+  <app-server-setup class="cp"></app-server-setup>
+  <div class="cpheader">game-setup</div>
+  <game-setup class="cp"></game-setup>
+</div>
 `;
 
 const gameList = document.querySelector<GameListComponent>("app-game-list");
@@ -94,6 +127,11 @@ gameList!.onNewGameAction = () => {
 };
 gameList!.onOpenGame = (id) => {
   console.log("Open game", id);
+};
+
+const gameSetup = document.querySelector<GameSetupComponent>("game-setup")!;
+gameSetup.onConfirm = () => {
+  console.log("Confirmation user");
 };
 
 // const appComponent = document.querySelector("app-component")!;
