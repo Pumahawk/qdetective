@@ -15,6 +15,10 @@ import {
   GameListComponentF,
 } from "./components/GameListComponent.ts";
 import {
+  type GameResultComponent,
+  GameResultComponentF,
+} from "./components/GameResultComponent.ts";
+import {
   type GameSetupComponent,
   GameSetupComponentF,
 } from "./components/GameSetupComponent.ts";
@@ -99,6 +103,7 @@ GameInfoComponentF(customElements);
 DiceRollComponentF(customElements);
 ItemSelectionComponentF(customElements);
 CallStatusComponentF(customElements);
+GameResultComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -147,6 +152,9 @@ appElement.innerHTML = `
 
   <div class="cpheader">app-call-status</div>
   <app-call-status class="cp"></app-call-status>
+
+  <div class="cpheader">app-game-result</div>
+  <app-game-result class="cp"></app-game-result>
 </div>
 `;
 
@@ -228,3 +236,11 @@ callStatus?.update({
 callStatus.onContinue = () => {
   console.log("Continue action");
 };
+
+const gameResult = document.querySelector<GameResultComponent>(
+  "app-game-result",
+)!;
+gameResult.update({
+  items: ["1", "2", "3"],
+  players: [{ id: "1", status: 1, items: ["5", "6"] }],
+});
