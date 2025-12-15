@@ -1,30 +1,14 @@
+import { RootComponentF } from "./components/RootComponent.ts";
+import { GameSetupRootComponentF } from "./components/GameSetupRootComponent.ts";
+import { GameRootComponentF } from "./components/GameRootComponent.ts";
 import { BoardComponentF } from "./components/BoardComponent.ts";
+import { CallStatusComponentF } from "./components/CallStatusComponent.ts";
+import { DiceRollComponentF } from "./components/DiceRollComponent.ts";
+import { GameInfoComponentF } from "./components/GameInfoComponent.ts";
+import { GameListComponentF } from "./components/GameListComponent.ts";
+import { GameResultComponentF } from "./components/GameResultComponent.ts";
+import { GameSetupComponentF } from "./components/GameSetupComponent.ts";
 import {
-  type CallStatusComponent,
-  CallStatusComponentF,
-} from "./components/CallStatusComponent.ts";
-import {
-  type DiceRollComponent,
-  DiceRollComponentF,
-} from "./components/DiceRollComponent.ts";
-import {
-  type GameInfoComponent,
-  GameInfoComponentF,
-} from "./components/GameInfoComponent.ts";
-import {
-  type GameListComponent,
-  GameListComponentF,
-} from "./components/GameListComponent.ts";
-import {
-  type GameResultComponent,
-  GameResultComponentF,
-} from "./components/GameResultComponent.ts";
-import {
-  type GameSetupComponent,
-  GameSetupComponentF,
-} from "./components/GameSetupComponent.ts";
-import {
-  type ItemSelectionComponent,
   ItemSelectionComponentF,
 } from "./components/ItemSelectionComponent.ts";
 import { ServerSetupComponentF } from "./components/ServerSetupComponent.ts";
@@ -41,13 +25,21 @@ ItemSelectionComponentF(customElements);
 CallStatusComponentF(customElements);
 GameResultComponentF(customElements);
 BoardComponentF(customElements);
+RootComponentF(customElements);
+GameRootComponentF(customElements);
+GameSetupRootComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
-
 appElement.innerHTML = `
+<app-root></app-root>
+`;
+
+/*
+appElement.innerHTML = `
+
 <style>
 .cplist {
-  display: flex; 
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -187,3 +179,4 @@ gameResult.update({
   items: ["1", "2", "3"],
   players: [{ id: "1", status: 1, items: ["5", "6"] }],
 });
+*/

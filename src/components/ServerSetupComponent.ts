@@ -1,6 +1,6 @@
 const inputTextName = "server-address";
 
-export interface ServerSetupComponent {
+export interface ServerSetupComponent extends HTMLElement {
   onServerSelected: (address: string) => void;
 }
 
