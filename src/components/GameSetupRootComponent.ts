@@ -1,3 +1,4 @@
+import type { AppService } from "../services/AppService.ts";
 import type { GameInfoComponent } from "./GameInfoComponent.ts";
 import type { GameListComponent } from "./GameListComponent.ts";
 import type { ServerSetupComponent } from "./ServerSetupComponent.ts";
@@ -5,7 +6,10 @@ import type { ServerSetupComponent } from "./ServerSetupComponent.ts";
 export interface GameSetupRootComponent extends HTMLElement {
 }
 
-export function GameSetupRootComponentF(cr: CustomElementRegistry) {
+export function GameSetupRootComponentF(
+  cr: CustomElementRegistry,
+  appService: AppService,
+) {
   class GameSetupRootComponentImpl extends HTMLElement
     implements GameSetupRootComponent {
     gameListElement: GameListComponent | undefined;
@@ -46,6 +50,14 @@ export function GameSetupRootComponentF(cr: CustomElementRegistry) {
       this.serverSetupElement = shadowRoot.querySelector<ServerSetupComponent>(
         "app-server-setup",
       )!;
+      this.serverSetupElement.onServerSelected = (address) => {
+        appService.ping(address).then(() => {
+          appService.redirectToServerPage(address);
+        }).catch((reason) => {
+          console.log(address + "is not a valid server.", reason);
+          alert(address + " is not a valid server.");
+        });
+      };
     }
 
     private initGameInfoElement(shadowRoot: ShadowRoot): void {
@@ -55,8 +67,8 @@ export function GameSetupRootComponentF(cr: CustomElementRegistry) {
     }
 
     private initFirstSetup(): void {
-      const url = new URLSearchParams(globalThis.window.location.href);
-      const server = url.get("server");
+      const url = new URL(globalThis.window.location.href);
+      const server = url.searchParams.get("server");
       if (!server) {
         console.log("serverSetupElement", this.serverSetupElement);
         this.serverSetupElement?.removeAttribute("hidden");

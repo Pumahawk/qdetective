@@ -39,4 +39,21 @@ export class AppService {
     const response = await result.json() as NewStatusResponseDTO;
     return response.id;
   }
+
+  async ping(address: string): Promise<void> {
+    const result = await fetch(address + "/status");
+    if (result.status) {
+      await result.json();
+    } else {
+      console.log("Invalid server: ", result);
+      throw new Error("result: ");
+    }
+  }
+
+  redirectToServerPage(serverAddress: string) {
+    const url = new URL(globalThis.window.location.href);
+    url.searchParams.set("server", serverAddress);
+    console.log("url", url.toString());
+    globalThis.window.location.href = url.toString();
+  }
 }

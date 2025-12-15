@@ -27,7 +27,7 @@ GameResultComponentF(customElements);
 BoardComponentF(customElements);
 RootComponentF(customElements);
 GameRootComponentF(customElements);
-GameSetupRootComponentF(customElements);
+GameSetupRootComponentF(customElements, appService);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 appElement.innerHTML = `
