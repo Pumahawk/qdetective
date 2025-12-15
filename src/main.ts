@@ -1,3 +1,4 @@
+import { BoardComponentF } from "./components/BoardComponent.ts";
 import {
   type CallStatusComponent,
   CallStatusComponentF,
@@ -32,13 +33,14 @@ import { AppService } from "./services/AppService.ts";
 const appService = new AppService();
 
 ServerSetupComponentF(customElements);
-GameListComponentF(customElements, appService);
+GameListComponentF(customElements);
 GameSetupComponentF(customElements);
 GameInfoComponentF(customElements);
 DiceRollComponentF(customElements);
 ItemSelectionComponentF(customElements);
 CallStatusComponentF(customElements);
 GameResultComponentF(customElements);
+BoardComponentF(customElements);
 
 const appElement = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -90,6 +92,9 @@ appElement.innerHTML = `
 
   <div class="cpheader">app-game-result</div>
   <app-game-result class="cp"></app-game-result>
+
+  <div class="cpheader">app-board</div>
+  <app-board class="cp"></app-board>
 </div>
 `;
 

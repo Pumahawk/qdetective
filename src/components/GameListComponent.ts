@@ -1,5 +1,3 @@
-import type { AppService } from "../services/AppService.ts";
-
 const gameListElementId = "game-list";
 const actionsElementId = "actions-bar";
 const newGameButtonId = "new-game-button";
@@ -17,10 +15,7 @@ export interface GameListComponent extends HTMLElement {
   update(model: GameListModel): void;
 }
 
-export function GameListComponentF(
-  cr: CustomElementRegistry,
-  appService: AppService,
-) {
+export function GameListComponentF(cr: CustomElementRegistry) {
   class GameListComponentImpl extends HTMLElement implements GameListComponent {
     gameListComponent: HTMLElement | undefined;
     onNewGameAction = () => {};
@@ -45,12 +40,6 @@ export function GameListComponentF(
       newGameButtonElement.onclick = () => {
         this.onNewGameAction();
       };
-
-      appService.statusList().then((ids) =>
-        this.update({
-          games: ids.map((id) => ({ id: id, label: id })),
-        })
-      );
     }
 
     update(model: GameListModel) {

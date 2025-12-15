@@ -31,6 +31,7 @@ export interface BoardComponent extends HTMLElement {
 
 export function BoardComponentF(cr: CustomElementRegistry) {
   class BoardComponentImpl extends HTMLElement implements BoardComponent {
+    model: BoardModel | undefined;
     blockSize = 16;
     boardSizeX = 25 * this.blockSize;
     boardSizeY = 25 * this.blockSize;
@@ -46,6 +47,7 @@ export function BoardComponentF(cr: CustomElementRegistry) {
     }
 
     update(model: BoardModel): void {
+      this.model = model;
       this.draw(model);
     }
 
@@ -74,9 +76,10 @@ export function BoardComponentF(cr: CustomElementRegistry) {
       await Promise.all(assetLoader.getImages().map((img) => img.decode()));
 
       this.dispatchEvent(new CustomEvent(boardComponentEvents.assetsLoaded));
+      this.draw(this.model);
     }
 
-    draw(model: BoardModel) {
+    draw(model: BoardModel | undefined) {
       if (this.assetManager) {
         this.assetManager.drawBoard();
         if (model) {
