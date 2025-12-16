@@ -12,32 +12,27 @@ interface NewStatusResponseDTO {
 }
 
 export class AppService {
-  async statusList(): Promise<string[]> {
-    const result = await fetch("http://localhost:8080/status", {
-      mode: "cors",
-      referrerPolicy: "no-referrer",
-    });
-    console.log("result", result);
-    console.log("status", result.status);
-    const response = await result.json() as StatusResponseDTO;
-    return response.status?.map((s) => s.id) ?? [];
-  }
-
-  async createGame(name: string): Promise<string> {
-    const result = await fetch("http://localhost:8080/status", {
+  async createGame(address: string, status: {
+    playerAsset: string;
+    playerName: string;
+    gameName: string | null;
+  }): Promise<string> {
+    const result = await fetch(address + "/status", {
       method: "POST",
-      mode: "cors",
-      referrerPolicy: "no-referrer",
       body: JSON.stringify({
         data: {
-          name: name,
+          name: status.gameName,
+          players: [{ name: status.playerName, asset: status.playerAsset }],
         },
       }),
     });
-    console.log("result", result);
-    console.log("status", result.status);
-    const response = await result.json() as NewStatusResponseDTO;
-    return response.id;
+
+    if (result.status == 200) {
+      const body = await result.json() as NewStatusResponseDTO;
+      return body.id;
+    } else {
+      throw new Error("Unable to create game. Status: " + result.status);
+    }
   }
 
   async ping(address: string): Promise<void> {
@@ -55,5 +50,15 @@ export class AppService {
     url.searchParams.set("server", serverAddress);
     console.log("url", url.toString());
     globalThis.window.location.href = url.toString();
+  }
+
+  async getGameListFromServer(address: string): Promise<StatusResponseDTO> {
+    const result = await fetch(address + "/status");
+    if (result.status == 200) {
+      const body = await result.json() as StatusResponseDTO;
+      return body;
+    } else {
+      throw new Error("server status code: " + 200);
+    }
   }
 }

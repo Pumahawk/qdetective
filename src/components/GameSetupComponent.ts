@@ -1,14 +1,20 @@
 const playerAssetSize = 16;
 const scale = 3;
 
+export type OnConfirmType = (value: {
+  playerAsset: string;
+  playerName: string;
+  gameName: string | null;
+}) => void;
+
 export interface GameSetupComponent extends HTMLElement {
-  onConfirm(): void;
+  onConfirm: undefined | OnConfirmType;
 }
 
 export function GameSetupComponentF(cr: CustomElementRegistry) {
   class GameSetupComponentImpl extends HTMLElement
     implements GameSetupComponent {
-    onConfirm = () => {};
+    onConfirm: undefined | OnConfirmType = undefined;
 
     constructor() {
       super();
@@ -39,17 +45,17 @@ export function GameSetupComponentF(cr: CustomElementRegistry) {
 }
 </style>
 <form>
-  <input type="text" placeholder="Game name">
+  <input name="gameName" type="text" placeholder="Game name" required>
   <div>
       <div class="player-img-conainer">
         <image class="player-img">
       </div>
-    <select>
-      <option>Player 1</option>
+    <select name="playerAsset">
+      <option value="1">Player 1</option>
     </select>
   </div>
   <div>
-    <input type="text" placeholder="Player name">
+    <input name="playerName" type="text" placeholder="Player name" required>
   </div>
   <div>
     <button type="submit">Create</button>
@@ -59,10 +65,17 @@ export function GameSetupComponentF(cr: CustomElementRegistry) {
       const form = this.shadowRoot!.querySelector("form")!;
       form.onsubmit = (e) => {
         e.preventDefault();
-        this.onConfirm();
+        const data = new FormData(form);
+        if (this.onConfirm) {
+          this.onConfirm({
+            gameName: data.get("gameName")?.toString() ?? null,
+            playerName: data.get("playerName")!.toString(),
+            playerAsset: data.get("playerAsset")!.toString(),
+          });
+        }
       };
     }
   }
 
-  cr.define("game-setup", GameSetupComponentImpl);
+  cr.define("app-game-setup", GameSetupComponentImpl);
 }
