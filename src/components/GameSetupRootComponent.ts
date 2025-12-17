@@ -19,6 +19,7 @@ export function GameSetupRootComponentF(
     gameSetupElement: GameSetupComponent | undefined;
 
     serverAddress: string | null = null;
+    gameId: string | undefined;
 
     constructor() {
       super();
@@ -34,7 +35,7 @@ export function GameSetupRootComponentF(
   <app-game-list hidden></app-game-list>
   <app-server-setup hidden></app-server-setup>
   <app-game-info hidden></app-game-info>
-  <app-game-setup hidden></app-game-setup>
+  <app-game-setup mode="create" hidden></app-game-setup>
 </div>
 `;
 
@@ -53,6 +54,11 @@ export function GameSetupRootComponentF(
       this.gameListElement.onNewGameAction = () => {
         this.gameListElement?.setAttribute("hidden", "");
         this.gameSetupElement?.removeAttribute("hidden");
+        this.gameSetupElement?.setAttribute("mode", "create");
+      };
+      this.gameListElement.onOpenGame = (id) => {
+        this.openGameLobby(id);
+        this.gameListElement?.setAttribute("hidden", "");
       };
     }
 
@@ -74,6 +80,11 @@ export function GameSetupRootComponentF(
       this.gameInfoElement = shadowRoot.querySelector<GameInfoComponent>(
         "app-game-info",
       )!;
+      this.gameInfoElement.onJoin = () => {
+        this.gameSetupElement?.setAttribute("mode", "join");
+        this.gameSetupElement?.removeAttribute("hidden");
+        this.gameInfoElement?.setAttribute("hidden", "");
+      };
     }
 
     private initGameSetup(shadowRoot: ShadowRoot): void {
@@ -83,15 +94,32 @@ export function GameSetupRootComponentF(
       this.gameSetupElement.onConfirm = (e) => {
         console.log("Confirm game creation", e);
         if (this.serverAddress) {
-          appService.createGame(this.serverAddress, {
-            gameName: e.gameName,
-            playerName: e.playerName,
-            playerAsset: e.playerAsset,
-          }).then((id) => {
-            console.log("Create game. Game id: ", id);
-          }).catch((e) => {
-            console.log("error on create game", e);
-          });
+          if (e.mode == "create") {
+            appService.createGame(this.serverAddress, {
+              gameName: e.gameName!,
+              playerName: e.playerName,
+              playerAsset: e.playerAsset,
+            }).then((id) => {
+              this.gameSetupElement?.setAttribute("hidden", "");
+              this.openGameLobby(id);
+              this.gameInfoElement?.removeAttribute("hidden");
+              this.gameInfoElement?.update({
+                players: [],
+              });
+            }).catch((e) => {
+              console.log("error on create game", e);
+              alert("unable to create game.");
+            });
+          } else {
+            if (this.gameId) {
+              appService.joinGame(this.serverAddress, this.gameId, {
+                playerName: e.playerName,
+                playerAsset: e.playerAsset,
+              });
+            } else {
+              console.error("this.gameId", this.gameId);
+            }
+          }
         } else {
           console.error("this.serverAddress falsy");
         }
@@ -115,6 +143,24 @@ export function GameSetupRootComponentF(
         }).catch((e) => {
           console.log("Unable to retrieve game list", e);
         });
+      }
+    }
+
+    private openGameLobby(id: string) {
+      this.gameId = id;
+      if (this.gameInfoElement && this.serverAddress) {
+        this.gameInfoElement.removeAttribute("hidden");
+        appService.watchGameLobby(this.serverAddress, id, (players) => {
+          this.gameInfoElement?.update({
+            players: players.map((p) => ({ label: p.name })),
+          });
+        }).then(() => {
+          console.log("Stream disconnected.");
+        }).catch((e) => {
+          console.error("Unable to retrieve messages", e);
+        });
+      } else {
+        console.error("Unable to open game section");
       }
     }
   }

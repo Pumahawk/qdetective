@@ -18,6 +18,7 @@ export interface GameListComponent extends HTMLElement {
 export function GameListComponentF(cr: CustomElementRegistry) {
   class GameListComponentImpl extends HTMLElement implements GameListComponent {
     gameListComponent: HTMLElement | undefined;
+
     onNewGameAction = () => {};
     onOpenGame = (_: string) => {};
 

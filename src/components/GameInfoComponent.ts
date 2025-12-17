@@ -67,6 +67,7 @@ export function GameInfoComponentF(cr: CustomElementRegistry) {
     }
 
     update(model: GameInfoModel) {
+      this.playersListElement?.replaceChildren();
       model.players.map((player) => this.toElement(player)).forEach((
         element,
       ) => this.playersListElement?.append(element));
