@@ -1,10 +1,7 @@
 import { useState } from "react";
-
-const playerAssetSize = 16;
-const scale = 3;
+import { PlayerImg } from "../core/core.tsx";
 
 type GameListMode = "create" | "join";
-
 export type OnConfirmType = (value: {
   mode: GameListMode;
   playerAsset: number;
@@ -75,34 +72,4 @@ export function GameSetupComponent(
       </form>
     </div>
   );
-}
-
-export function PlayerImg({ imageId }: { imageId: number }) {
-  return (
-    <div
-      style={{
-        width: `${playerAssetSize * scale}px`,
-        height: `${playerAssetSize * scale}px`,
-      }}
-    >
-      <div
-        style={{
-          width: `${playerAssetSize}px`,
-          height: `${playerAssetSize}px`,
-          transform: `scale(${scale})`,
-          transformOrigin: `top left`,
-          backgroundImage: `url("/players.png")`,
-          backgroundSize: `48px 48px`,
-          backgroundPosition: getBkPos(imageId),
-          imageRendering: `pixelated`,
-        }}
-      />
-    </div>
-  );
-}
-
-function getBkPos(pos: number): string {
-  const col = pos % 3;
-  const row = Math.floor(pos / 3);
-  return `${-col * 16}px ${-row * 16}px`;
 }
