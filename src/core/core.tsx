@@ -55,3 +55,28 @@ function getBkPos(pos: number): string {
   const row = Math.floor(pos / 3);
   return `${-col * 16}px ${-row * 16}px`;
 }
+
+// TODO define image dice
+export function DiceImg({ value }: { value: number }) {
+  return (
+    <div
+      style={{
+        width: `${playerAssetSize * scale}px`,
+        height: `${playerAssetSize * scale}px`,
+      }}
+    >
+      <div
+        style={{
+          width: `${playerAssetSize}px`,
+          height: `${playerAssetSize}px`,
+          transform: `scale(${scale})`,
+          transformOrigin: `top left`,
+          backgroundImage: `url("/players.png")`,
+          backgroundSize: `48px 48px`,
+          backgroundPosition: getBkPos(0),
+          imageRendering: `pixelated`,
+        }}
+      />
+    </div>
+  );
+}
