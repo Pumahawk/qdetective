@@ -80,3 +80,7 @@ export function DiceImg({ value }: { value: number }) {
     </div>
   );
 }
+
+export function Loading() {
+  return <div>loading...</div>;
+}
