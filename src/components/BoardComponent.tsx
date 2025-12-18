@@ -1,26 +1,22 @@
 import { type RefObject, useEffect, useRef } from "react";
-import { BoardComponentImpl, type BoardModel } from "../core/board-core.ts";
+import { BoardComponentImpl } from "../core/board-core.ts";
 
 const blockSize = 16;
 const boardSizeX = 25 * blockSize;
 const boardSizeY = 25 * blockSize;
 
 export interface BoardProps {
-  model: BoardModel;
-  ref?: RefObject<Promise<BoardComponentImpl>>;
+  ref?: RefObject<Promise<BoardComponentImpl> | null>;
   onBoardClick?: (x: number, y: number) => void;
 }
 
-export function BoardComponent({ model, onBoardClick, ref }: BoardProps) {
+export function BoardComponent({ onBoardClick, ref }: BoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
       const bcmp = BoardComponentImpl.of(canvas, {
         onBoardClick,
-      }).then((board) => {
-        board.draw(model);
-        return board;
       });
       if (ref) {
         ref.current = bcmp;
