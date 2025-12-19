@@ -1,5 +1,6 @@
 import type {
   AllStateResponseDto,
+  GetStatusResponseDto as GetStatusResponseDto,
   NewStatusResponseDTO,
   StatusGameDto,
 } from "../core/dto.ts";
@@ -42,6 +43,15 @@ export function createGame(address: string, status: {
   };
 
   return client.post<NewStatusResponseDTO>("status", bodyRequest);
+}
+
+export async function getGame(
+  address: string,
+  gameId: string,
+): Promise<GetStatusResponseDto> {
+  const client = StateServerClient(address);
+
+  return await client.get<GetStatusResponseDto>("status/" + gameId);
 }
 
 export function getGamesFromServer(

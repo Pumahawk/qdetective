@@ -6,7 +6,11 @@ import {
   type OnConfirmEvent,
 } from "./GameSetupComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
-import { createGame, getGamesFromServer } from "../services/AppService.ts";
+import {
+  createGame,
+  getGame,
+  getGamesFromServer,
+} from "../services/AppService.ts";
 import { Loading } from "../core/core.tsx";
 
 type ViewState =
@@ -76,11 +80,9 @@ export function GameSetupRootComponent() {
         url.searchParams.set("address", address);
         history.pushState({}, "", url.toString());
         setView({ state: "game-list", games });
-        setLoading(false);
         addressRef.current = address;
-      }).catch(() => {
+      }).finally(() => {
         setLoading(false);
-        setView(view);
       });
     }
   }
@@ -93,8 +95,20 @@ export function GameSetupRootComponent() {
     });
   }
 
-  function handleOnOpenGame() {
+  function handleOnOpenGame(gameId: string) {
     console.log("Handle handleOnOpenGame");
+    if (addressRef.current) {
+      setLoading(true);
+      getGame(addressRef.current, gameId).then((response) => {
+        setView({
+          state: "game-info",
+          name: response.data.name,
+          players: response.data.players,
+        });
+      }).finally(() => {
+        setLoading(false);
+      });
+    }
   }
 
   function handleOnJoin() {
@@ -150,7 +164,7 @@ export function GameSetupRootComponent() {
               <GameListComponent
                 games={view.games}
                 onNewGameAction={() => handleOnNewGameAction()}
-                onOpenGame={() => handleOnOpenGame()}
+                onOpenGame={(gameId) => handleOnOpenGame(gameId)}
               />
             )}
 

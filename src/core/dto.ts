@@ -19,3 +19,8 @@ export interface NewStatusResponseDTO {
   id: string;
   data: StatusGameDto;
 }
+
+export interface GetStatusResponseDto {
+  id: string;
+  data: StatusGameDto;
+}
