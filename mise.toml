@@ -5,4 +5,4 @@ node = "25.1.0"
 run = "npm run dev"
 
 [tasks.errors]
-run = "npx tsc --noEmit"
+run = "npx tsc --project tsconfig.fullcheck.json"

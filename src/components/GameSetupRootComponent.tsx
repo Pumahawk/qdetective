@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { GameInfoComponent } from "./GameInfoComponent.tsx";
 import { GameListComponent } from "./GameListComponent.tsx";
-import { GameSetupComponent } from "./GameSetupComponent.tsx";
+import {
+  GameSetupComponent,
+  type OnConfirmEvent,
+} from "./GameSetupComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
-import { getGamesFromServer } from "../services/AppService.ts";
+import { createGame, getGamesFromServer } from "../services/AppService.ts";
 import { Loading } from "../core/core.tsx";
 
 type ViewState =
@@ -43,7 +46,7 @@ interface GameInfo {
 export function GameSetupRootComponent() {
   const [view, setView] = useState<ViewState | null>(null);
   const [loading, setLoading] = useState(true);
-  const address = useRef<string | null>(null);
+  const addressRef = useRef<string | null>(null);
 
   useEffect(() => {
     getInitialState().then((s) => {
@@ -53,11 +56,11 @@ export function GameSetupRootComponent() {
   }, []);
 
   async function getInitialState(): Promise<ViewState> {
-    address.current = getAddressFromUrl();
-    if (address.current) {
+    addressRef.current = getAddressFromUrl();
+    if (addressRef.current) {
       return {
         state: "game-list",
-        games: await getGamesInfoForComponent(address.current),
+        games: await getGamesInfoForComponent(addressRef.current),
       };
     } else {
       return { state: "server-setup" };
@@ -74,6 +77,7 @@ export function GameSetupRootComponent() {
         history.pushState({}, "", url.toString());
         setView({ state: "game-list", games });
         setLoading(false);
+        addressRef.current = address;
       }).catch(() => {
         setLoading(false);
         setView(view);
@@ -83,6 +87,10 @@ export function GameSetupRootComponent() {
 
   function handleOnNewGameAction() {
     console.log("Hansle on new game action");
+    setView({
+      state: "game-setup",
+      mode: "create",
+    });
   }
 
   function handleOnOpenGame() {
@@ -97,8 +105,31 @@ export function GameSetupRootComponent() {
     console.log("Handle handleOnShare");
   }
 
-  function handleOnConfirm() {
-    console.log("Handle handleOnConfirm");
+  function handleOnConfirm(e: OnConfirmEvent) {
+    if (!addressRef.current) {
+      console.log("Invalid address value.", addressRef.current);
+      return;
+    }
+
+    switch (e.mode) {
+      case "create":
+        createGame(addressRef.current, {
+          gameName: e.gameName,
+          playerAsset: e.playerAsset,
+          playerName: e.playerName,
+        }).then((response) => {
+          setView({
+            state: "game-info",
+            name: response.data.name,
+            players: response.data.players,
+          });
+        });
+        break;
+
+      case "join":
+        console.error("not implemented join");
+        break;
+    }
   }
 
   return (
@@ -135,7 +166,7 @@ export function GameSetupRootComponent() {
             {view.state === "game-setup" && (
               <GameSetupComponent
                 mode={view.mode}
-                onConfirm={() => handleOnConfirm()}
+                onConfirm={(e) => handleOnConfirm(e)}
               />
             )}
           </div>

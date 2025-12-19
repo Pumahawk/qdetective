@@ -38,8 +38,8 @@ export function ItemSelectionComponent(
 function retrieveSelectedItemsFromForm(form: HTMLFormElement): string[] {
   const data = new FormData(form);
   const itemsIds: string[] = [];
-  for (const [key, value] of data.entries()) {
+  data.forEach((value, key) => {
     if (key.startsWith("item_")) itemsIds.push(value.toString());
-  }
+  });
   return itemsIds;
 }

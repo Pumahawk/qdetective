@@ -1,4 +1,8 @@
-import type { AllStateResponseDto } from "../core/dto.ts";
+import type {
+  AllStateResponseDto,
+  NewStatusResponseDTO,
+  StatusGameDto,
+} from "../core/dto.ts";
 
 export function getPlayerById(
   id: string,
@@ -21,6 +25,25 @@ export function getItemById(
   };
 }
 
+export function createGame(address: string, status: {
+  playerAsset: number;
+  playerName: string;
+  gameName: string;
+}): Promise<NewStatusResponseDTO> {
+  const client = StateServerClient(address);
+
+  const bodyRequest: StatusGameDto = {
+    name: status.gameName,
+    players: [{
+      id: crypto.randomUUID(),
+      name: status.playerName,
+      asset: status.playerAsset,
+    }],
+  };
+
+  return client.post<NewStatusResponseDTO>("status", bodyRequest);
+}
+
 export function getGamesFromServer(
   address: string,
 ): Promise<AllStateResponseDto> {
@@ -32,6 +55,14 @@ function StateServerClient(address: string) {
     async get<T>(path: string): Promise<T> {
       const response = await fetch(address + "/" + path);
       return response.json() as T;
+    },
+
+    async post<RS>(path: string, body?: unknown): Promise<RS> {
+      const response = await fetch(address + "/" + path, {
+        method: "POST",
+        body: body as string && JSON.stringify({ data: body }),
+      });
+      return response.json() as RS;
     },
   };
 }

@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { PlayerImg } from "../core/core.tsx";
 
-type GameListMode = "create" | "join";
-export type OnConfirmType = (value: {
-  mode: GameListMode;
+export type OnConfirmEvent = OnConfirmCreateEvent | OnConfirmJoinEvent;
+
+export type GameListMode = "create" | "join";
+
+interface OnConfirmBaseEvent {
   playerAsset: number;
   playerName: string;
-  gameName: string | null;
-}) => void;
+}
+
+export interface OnConfirmCreateEvent extends OnConfirmBaseEvent {
+  mode: "create";
+  gameName: string;
+}
+
+export interface OnConfirmJoinEvent extends OnConfirmBaseEvent {
+  mode: "join";
+}
+
+export type OnConfirmType = (value: OnConfirmEvent) => void;
 
 export function GameSetupComponent(
   { mode, onConfirm }: { mode: GameListMode; onConfirm: OnConfirmType },
@@ -19,12 +31,23 @@ export function GameSetupComponent(
         onSubmit={(e) => {
           e.preventDefault();
           const data = new FormData(e.currentTarget);
-          onConfirm({
-            mode: mode,
-            gameName: data.get("gameName")?.toString() ?? null,
+          const baseEvent = {
             playerName: data.get("playerName")!.toString(),
             playerAsset: Number(data.get("playerAsset")!),
-          });
+          };
+
+          onConfirm(
+            mode === "create"
+              ? {
+                mode: "create",
+                gameName: data.get("gameName")!.toString(),
+                ...baseEvent,
+              }
+              : {
+                mode: "join",
+                ...baseEvent,
+              },
+          );
         }}
       >
         {mode == "create" && (

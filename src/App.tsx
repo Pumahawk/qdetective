@@ -1,7 +1,4 @@
-import { useEffect, useRef } from "react";
 import "./App.css";
-import { BoardComponent } from "./components/BoardComponent.tsx";
-import type { BoardComponentImpl } from "./core/board-core.ts";
 import { GameSetupRootComponent } from "./components/GameSetupRootComponent.tsx";
 
 function App() {
