@@ -44,6 +44,7 @@ interface GameInfoState {
   players: {
     id: string;
     name: string;
+    assetId: number;
   }[];
 }
 
@@ -84,8 +85,8 @@ const GameSetupRootController = {
   },
 
   async createGame(address: string, createInfo: {
-    playerAsset: number;
     playerName: string;
+    playerAssetId: number;
     gameName: string;
   }): Promise<NewStatusResponseDTO> {
     const playerId = crypto.randomUUID();
@@ -198,7 +199,7 @@ export function GameSetupRootComponent() {
       case "create":
         GameSetupRootController.createGame(addressRef.current, {
           gameName: e.gameName,
-          playerAsset: e.playerAsset,
+          playerAssetId: e.playerAssetId,
           playerName: e.playerName,
         }).then((response) => {
           setView({
@@ -214,7 +215,7 @@ export function GameSetupRootComponent() {
       case "join":
         GameSetupRootController.joinGame(addressRef.current, {
           gameId: e.gameId,
-          playerAsset: e.playerAsset,
+          playerAsset: e.playerAssetId,
           playerName: e.playerName,
         }).then((response) => {
           setView({

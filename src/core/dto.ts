@@ -13,7 +13,7 @@ export interface StatusGameDto {
 export interface PlayerDto {
   id: string;
   name: string;
-  asset: number;
+  assetId: number;
 }
 
 export interface NewStatusResponseDTO {

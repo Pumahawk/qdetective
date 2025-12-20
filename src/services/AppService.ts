@@ -48,7 +48,7 @@ export async function joinGame(address: string, status: {
     players: [...gameResponse.data.players, {
       id: status.playerId,
       name: status.playerName,
-      asset: status.playerAsset,
+      assetId: status.playerAsset,
     }],
   };
 
@@ -60,7 +60,7 @@ export async function joinGame(address: string, status: {
 
 export function createGame(address: string, status: {
   playerId: string;
-  playerAsset: number;
+  playerAssetId: number;
   playerName: string;
   gameName: string;
 }): Promise<NewStatusResponseDTO> {
@@ -72,7 +72,7 @@ export function createGame(address: string, status: {
     players: [{
       id: status.playerId,
       name: status.playerName,
-      asset: status.playerAsset,
+      assetId: status.playerAssetId,
     }],
   };
 

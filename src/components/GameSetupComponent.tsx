@@ -9,7 +9,7 @@ export type GameListMode = { mode: "create" } | {
 };
 
 interface OnConfirmBaseEvent {
-  playerAsset: number;
+  playerAssetId: number;
   playerName: string;
 }
 
@@ -37,7 +37,7 @@ export function GameSetupComponent(
           const data = new FormData(e.currentTarget);
           const baseEvent = {
             playerName: data.get("playerName")!.toString(),
-            playerAsset: Number(data.get("playerAsset")!),
+            playerAssetId: Number(data.get("playerAsset")!),
           };
 
           onConfirm(
