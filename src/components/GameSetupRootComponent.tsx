@@ -10,6 +10,7 @@ import {
   createGame,
   getGame,
   getGamesFromServer,
+  joinGame,
 } from "../services/AppService.ts";
 import { Loading } from "../core/core.tsx";
 
@@ -17,7 +18,8 @@ type ViewState =
   | ServerSetupState
   | GameListState
   | GameInfoState
-  | GameSetupState;
+  | GameSetupJoinState
+  | GameSetupCreateState;
 
 interface ServerSetupState {
   state: "server-setup";
@@ -29,6 +31,7 @@ interface GameListState {
 }
 
 interface GameInfoState {
+  id: string;
   state: "game-info";
   name: string;
   players: {
@@ -37,9 +40,15 @@ interface GameInfoState {
   }[];
 }
 
-interface GameSetupState {
+interface GameSetupJoinState {
   state: "game-setup";
-  mode: "create" | "join";
+  mode: "join";
+  gameId: string;
+}
+
+interface GameSetupCreateState {
+  state: "game-setup";
+  mode: "create";
 }
 
 interface GameInfo {
@@ -102,6 +111,7 @@ export function GameSetupRootComponent() {
       getGame(addressRef.current, gameId).then((response) => {
         setView({
           state: "game-info",
+          id: gameId,
           name: response.data.name,
           players: response.data.players,
         });
@@ -111,8 +121,14 @@ export function GameSetupRootComponent() {
     }
   }
 
-  function handleOnJoin() {
-    console.log("Handle handleOnJoin");
+  function handleOnJoin(gameId: string) {
+    if (addressRef.current) {
+      setView({
+        state: "game-setup",
+        mode: "join",
+        gameId: gameId,
+      });
+    }
   }
 
   function handleOnShare() {
@@ -134,6 +150,7 @@ export function GameSetupRootComponent() {
         }).then((response) => {
           setView({
             state: "game-info",
+            id: response.id,
             name: response.data.name,
             players: response.data.players,
           });
@@ -141,7 +158,18 @@ export function GameSetupRootComponent() {
         break;
 
       case "join":
-        console.error("not implemented join");
+        joinGame(addressRef.current, {
+          gameId: e.gameId,
+          playerAsset: e.playerAsset,
+          playerName: e.playerName,
+        }).then((response) => {
+          setView({
+            state: "game-info",
+            id: response.id,
+            name: response.data.name,
+            players: response.data.players,
+          });
+        });
         break;
     }
   }
@@ -171,15 +199,23 @@ export function GameSetupRootComponent() {
             {view.state === "game-info" && (
               <GameInfoComponent
                 name={view.name}
+                id={view.id}
                 players={view.players}
-                onJoin={() => handleOnJoin()}
+                onJoin={(gameId) => handleOnJoin(gameId)}
                 onShare={() => handleOnShare()}
               />
             )}
 
-            {view.state === "game-setup" && (
+            {view.state === "game-setup" && view.mode === "join" && (
               <GameSetupComponent
-                mode={view.mode}
+                mode={{ mode: "join", gameId: view.gameId }}
+                onConfirm={(e) => handleOnConfirm(e)}
+              />
+            )}
+
+            {view.state === "game-setup" && view.mode === "create" && (
+              <GameSetupComponent
+                mode={{ mode: "create" }}
                 onConfirm={(e) => handleOnConfirm(e)}
               />
             )}

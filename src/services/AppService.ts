@@ -26,6 +26,30 @@ export function getItemById(
   };
 }
 
+export async function joinGame(address: string, status: {
+  gameId: string;
+  playerAsset: number;
+  playerName: string;
+}): Promise<NewStatusResponseDTO> {
+  const client = StateServerClient(address);
+
+  const gameResponse = await getGame(address, status.gameId);
+
+  const bodyRequest: StatusGameDto = {
+    name: gameResponse.data.name,
+    players: [...gameResponse.data.players, {
+      id: crypto.randomUUID(),
+      name: status.playerName,
+      asset: status.playerAsset,
+    }],
+  };
+
+  return client.post<NewStatusResponseDTO>(
+    "status/" + status.gameId,
+    bodyRequest,
+  );
+}
+
 export function createGame(address: string, status: {
   playerAsset: number;
   playerName: string;

@@ -3,7 +3,10 @@ import { PlayerImg } from "../core/core.tsx";
 
 export type OnConfirmEvent = OnConfirmCreateEvent | OnConfirmJoinEvent;
 
-export type GameListMode = "create" | "join";
+export type GameListMode = { mode: "create" } | {
+  mode: "join";
+  gameId: string;
+};
 
 interface OnConfirmBaseEvent {
   playerAsset: number;
@@ -17,6 +20,7 @@ export interface OnConfirmCreateEvent extends OnConfirmBaseEvent {
 
 export interface OnConfirmJoinEvent extends OnConfirmBaseEvent {
   mode: "join";
+  gameId: string;
 }
 
 export type OnConfirmType = (value: OnConfirmEvent) => void;
@@ -37,7 +41,7 @@ export function GameSetupComponent(
           };
 
           onConfirm(
-            mode === "create"
+            mode.mode === "create"
               ? {
                 mode: "create",
                 gameName: data.get("gameName")!.toString(),
@@ -45,12 +49,13 @@ export function GameSetupComponent(
               }
               : {
                 mode: "join",
+                gameId: mode.gameId,
                 ...baseEvent,
               },
           );
         }}
       >
-        {mode == "create" && (
+        {mode.mode == "create" && (
           <div>
             <input
               name="gameName"
@@ -89,7 +94,7 @@ export function GameSetupComponent(
         </div>
         <div>
           <button id="submit-button" type="submit">
-            {mode === "join" ? "Join" : "Create"}
+            {mode.mode === "join" ? "Join" : "Create"}
           </button>
         </div>
       </form>
