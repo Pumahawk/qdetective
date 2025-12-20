@@ -11,6 +11,7 @@ import {
   getStoreGamePlayerInfo,
   joinGame,
   setStoreGamePlayerInfo,
+  watchGame,
 } from "../services/AppService.ts";
 import { GameInfoComponent, type GameInfoMode } from "./GameInfoComponent.tsx";
 import { GameListComponent } from "./GameListComponent.tsx";
@@ -36,16 +37,18 @@ interface GameListState {
   games: GameInfo[];
 }
 
+interface PlayerInfo {
+  id: string;
+  name: string;
+  assetId: number;
+}
+
 interface GameInfoState {
   state: "game-info";
   id: string;
   name: string;
   mode: GameInfoMode;
-  players: {
-    id: string;
-    name: string;
-    assetId: number;
-  }[];
+  players: PlayerInfo[];
 }
 
 interface GameSetupJoinState {
@@ -106,12 +109,36 @@ export function GameSetupRootComponent() {
   const [loading, setLoading] = useState(true);
   const addressRef = useRef<string | null>(null);
 
+  const gameId = view?.state === "game-info" && view.id;
+
   useEffect(() => {
     getInitialState().then((s) => {
       setView(s);
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (view?.state === "game-info" && gameId && addressRef.current) {
+      const { controller } = watchGame(
+        addressRef.current,
+        gameId,
+        (message) => {
+          if (message.type === "status-update") {
+            setView((prev) =>
+              prev && {
+                ...prev,
+                players: message.message.players,
+              }
+            );
+          }
+        },
+      );
+      return () => {
+        controller.abort();
+      };
+    }
+  }, [gameId]);
 
   async function getInitialState(): Promise<ViewState> {
     addressRef.current = getAddressFromUrl();

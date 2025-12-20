@@ -25,3 +25,10 @@ export interface GetStatusResponseDto {
   id: string;
   data: StatusGameDto;
 }
+
+export type MessageDto = StatusMessageDto;
+
+export interface StatusMessageDto {
+  type: "status-update" | "status-info";
+  message: StatusGameDto;
+}
