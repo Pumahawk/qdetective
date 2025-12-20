@@ -37,6 +37,7 @@ export async function joinGame(address: string, status: {
 
   const bodyRequest: StatusGameDto = {
     name: gameResponse.data.name,
+    adminId: gameResponse.data.adminId,
     players: [...gameResponse.data.players, {
       id: crypto.randomUUID(),
       name: status.playerName,
@@ -57,10 +58,13 @@ export function createGame(address: string, status: {
 }): Promise<NewStatusResponseDTO> {
   const client = StateServerClient(address);
 
+  const playerId = crypto.randomUUID();
+
   const bodyRequest: StatusGameDto = {
     name: status.gameName,
+    adminId: playerId,
     players: [{
-      id: crypto.randomUUID(),
+      id: playerId,
       name: status.playerName,
       asset: status.playerAsset,
     }],

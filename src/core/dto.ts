@@ -6,10 +6,11 @@ export interface AllStateResponseDto {
 
 export interface StatusGameDto {
   name: string;
+  adminId: string;
   players: PlayerDto[];
 }
 
-interface PlayerDto {
+export interface PlayerDto {
   id: string;
   name: string;
   asset: number;
