@@ -1,18 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { GameInfoComponent } from "./GameInfoComponent.tsx";
+import { Loading } from "../core/core.tsx";
+import type {
+  GetStatusResponseDto,
+  NewStatusResponseDTO,
+} from "../core/dto.ts";
+import {
+  createGame,
+  getGame,
+  getGamesFromServer,
+  getStoreGamePlayerInfo,
+  joinGame,
+  setStoreGamePlayerInfo,
+} from "../services/AppService.ts";
+import { GameInfoComponent, type GameInfoMode } from "./GameInfoComponent.tsx";
 import { GameListComponent } from "./GameListComponent.tsx";
 import {
   GameSetupComponent,
   type OnConfirmEvent,
 } from "./GameSetupComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
-import {
-  createGame,
-  getGame,
-  getGamesFromServer,
-  joinGame,
-} from "../services/AppService.ts";
-import { Loading } from "../core/core.tsx";
 
 type ViewState =
   | ServerSetupState
@@ -31,9 +37,10 @@ interface GameListState {
 }
 
 interface GameInfoState {
-  id: string;
   state: "game-info";
+  id: string;
   name: string;
+  mode: GameInfoMode;
   players: {
     id: string;
     name: string;
@@ -55,6 +62,43 @@ interface GameInfo {
   id: string;
   name: string;
 }
+
+const GameSetupRootController = {
+  async joinGame(address: string, joinInfo: {
+    gameId: string;
+    playerAsset: number;
+    playerName: string;
+  }): Promise<GetStatusResponseDto> {
+    const playerId = crypto.randomUUID();
+
+    const result = await joinGame(address, {
+      playerId,
+      gameId: joinInfo.gameId,
+      playerAsset: joinInfo.playerAsset,
+      playerName: joinInfo.playerName,
+    });
+
+    setStoreGamePlayerInfo(joinInfo.gameId, playerId, false);
+
+    return result;
+  },
+
+  async createGame(address: string, createInfo: {
+    playerAsset: number;
+    playerName: string;
+    gameName: string;
+  }): Promise<NewStatusResponseDTO> {
+    const playerId = crypto.randomUUID();
+    const result = await createGame(address, {
+      playerId,
+      ...createInfo,
+    });
+
+    setStoreGamePlayerInfo(result.id, playerId, true);
+
+    return result;
+  },
+};
 
 export function GameSetupRootComponent() {
   const [view, setView] = useState<ViewState | null>(null);
@@ -108,10 +152,19 @@ export function GameSetupRootComponent() {
     console.log("Handle handleOnOpenGame");
     if (addressRef.current) {
       setLoading(true);
+      const storeInfo = getStoreGamePlayerInfo(gameId);
+      const mode = storeInfo
+        ? (storeInfo.admin ? "admin" : "not-admin")
+        : "to-join";
+
+      console.log("storeInfo: ", storeInfo);
+      console.log("admin: ", storeInfo?.admin);
+      console.log("mode: ", mode);
       getGame(addressRef.current, gameId).then((response) => {
         setView({
           state: "game-info",
           id: gameId,
+          mode,
           name: response.data.name,
           players: response.data.players,
         });
@@ -143,13 +196,14 @@ export function GameSetupRootComponent() {
 
     switch (e.mode) {
       case "create":
-        createGame(addressRef.current, {
+        GameSetupRootController.createGame(addressRef.current, {
           gameName: e.gameName,
           playerAsset: e.playerAsset,
           playerName: e.playerName,
         }).then((response) => {
           setView({
             state: "game-info",
+            mode: "admin",
             id: response.id,
             name: response.data.name,
             players: response.data.players,
@@ -158,13 +212,14 @@ export function GameSetupRootComponent() {
         break;
 
       case "join":
-        joinGame(addressRef.current, {
+        GameSetupRootController.joinGame(addressRef.current, {
           gameId: e.gameId,
           playerAsset: e.playerAsset,
           playerName: e.playerName,
         }).then((response) => {
           setView({
             state: "game-info",
+            mode: "not-admin",
             id: response.id,
             name: response.data.name,
             players: response.data.players,
@@ -198,6 +253,7 @@ export function GameSetupRootComponent() {
 
             {view.state === "game-info" && (
               <GameInfoComponent
+                mode={view.mode}
                 name={view.name}
                 id={view.id}
                 players={view.players}

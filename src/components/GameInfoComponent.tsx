@@ -1,5 +1,8 @@
+export type GameInfoMode = "admin" | "not-admin" | "to-join";
+
 export interface GameInfoProps {
   id: string;
+  mode: GameInfoMode;
   name: string;
   players: {
     id: string;
@@ -11,7 +14,7 @@ export interface GameInfoProps {
 }
 
 export function GameInfoComponent(
-  { id, name, players, onJoin, onShare }: GameInfoProps,
+  { id, mode, name, players, onJoin, onShare }: GameInfoProps,
 ) {
   return (
     <div>
@@ -23,7 +26,24 @@ export function GameInfoComponent(
         <button type="button" onClick={() => onShare && onShare(id)}>
           Share
         </button>
-        <button type="button" onClick={() => onJoin && onJoin(id)}>Join</button>
+
+        {mode === "to-join" && (
+          <button
+            type="button"
+            onClick={() => onJoin && onJoin(id)}
+          >
+            Join
+          </button>
+        )}
+
+        {mode === "admin" && (
+          <button type="button">
+            {/* onClick={() => onStart && start(id)} */}
+            Start Game
+          </button>
+        )}
+
+        {mode === "not-admin" && <div>Waiting...</div>}
       </div>
     </div>
   );

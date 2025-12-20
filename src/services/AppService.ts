@@ -5,6 +5,12 @@ import type {
   StatusGameDto,
 } from "../core/dto.ts";
 
+interface GameInfoLocalStorage {
+  gameId: string;
+  playerId: string;
+  admin: boolean;
+}
+
 export function getPlayerById(
   id: string,
 ): { id: string; assetId: number; name: string } {
@@ -28,9 +34,10 @@ export function getItemById(
 
 export async function joinGame(address: string, status: {
   gameId: string;
+  playerId: string;
   playerAsset: number;
   playerName: string;
-}): Promise<NewStatusResponseDTO> {
+}): Promise<GetStatusResponseDto> {
   const client = StateServerClient(address);
 
   const gameResponse = await getGame(address, status.gameId);
@@ -39,7 +46,7 @@ export async function joinGame(address: string, status: {
     name: gameResponse.data.name,
     adminId: gameResponse.data.adminId,
     players: [...gameResponse.data.players, {
-      id: crypto.randomUUID(),
+      id: status.playerId,
       name: status.playerName,
       asset: status.playerAsset,
     }],
@@ -52,19 +59,18 @@ export async function joinGame(address: string, status: {
 }
 
 export function createGame(address: string, status: {
+  playerId: string;
   playerAsset: number;
   playerName: string;
   gameName: string;
 }): Promise<NewStatusResponseDTO> {
   const client = StateServerClient(address);
 
-  const playerId = crypto.randomUUID();
-
   const bodyRequest: StatusGameDto = {
     name: status.gameName,
-    adminId: playerId,
+    adminId: status.playerId,
     players: [{
-      id: playerId,
+      id: status.playerId,
       name: status.playerName,
       asset: status.playerAsset,
     }],
@@ -103,4 +109,30 @@ function StateServerClient(address: string) {
       return response.json() as RS;
     },
   };
+}
+
+export function setStoreGamePlayerInfo(
+  gameId: string,
+  playerId: string,
+  admin: boolean,
+) {
+  const info: GameInfoLocalStorage = {
+    gameId,
+    playerId,
+    admin,
+  };
+
+  globalThis.localStorage.setItem(
+    "game_" + gameId,
+    JSON.stringify(info),
+  );
+}
+
+export function getStoreGamePlayerInfo(
+  gameId: string,
+): GameInfoLocalStorage | null {
+  const item = globalThis.localStorage.getItem(
+    "game_" + gameId,
+  );
+  return item !== null ? JSON.parse(item) as GameInfoLocalStorage : null;
 }
