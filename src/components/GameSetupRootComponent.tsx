@@ -206,16 +206,11 @@ export function GameSetupRootComponent() {
               />
             )}
 
-            {view.state === "game-setup" && view.mode === "join" && (
+            {view.state === "game-setup" && (
               <GameSetupComponent
-                mode={{ mode: "join", gameId: view.gameId }}
-                onConfirm={(e) => handleOnConfirm(e)}
-              />
-            )}
-
-            {view.state === "game-setup" && view.mode === "create" && (
-              <GameSetupComponent
-                mode={{ mode: "create" }}
+                mode={view.mode === "join"
+                  ? { mode: "join", gameId: view.gameId }
+                  : { mode: "create" }}
                 onConfirm={(e) => handleOnConfirm(e)}
               />
             )}
