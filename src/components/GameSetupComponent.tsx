@@ -37,7 +37,7 @@ export function GameSetupComponent(
           const data = new FormData(e.currentTarget);
           const baseEvent = {
             playerName: data.get("playerName")!.toString(),
-            playerAssetId: Number(data.get("playerAsset")!),
+            playerAssetId: imageId,
           };
 
           onConfirm(
@@ -66,31 +66,36 @@ export function GameSetupComponent(
           </div>
         )}
         <div>
-          <div className="player-img-conainer">
-            <PlayerImg imageId={imageId} />
-          </div>
-          <select
-            name="playerAsset"
-            onChange={(e) => setImageId(Number(e.target.value))}
+          <div
+            style={{
+              padding: "1em",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+            }}
           >
-            <option value="0">Player 1</option>
-            <option value="1">Player 2</option>
-            <option value="2">Player 3</option>
-            <option value="3">Player 4</option>
-            <option value="4">Player 5</option>
-            <option value="5">Player 6</option>
-            <option value="6">Player 7</option>
-            <option value="7">Player 8</option>
-            <option value="8">Player 9</option>
-          </select>
-        </div>
-        <div>
-          <input
-            name="playerName"
-            type="text"
-            placeholder="Player name"
-            required
-          />
+            {Array.from(Array(9).keys()).map((i) => (
+              <div
+                key={i}
+                style={{
+                  padding: "0.5em",
+                  borderStyle: "solid",
+                  borderColor: imageId === i ? "green" : "white",
+                  cursor: imageId != i ? "pointer" : undefined,
+                }}
+                onClick={() => setImageId(i)}
+              >
+                <PlayerImg imageId={i} />
+              </div>
+            ))}
+          </div>
+          <div style={{ margin: "1em" }}>
+            <input
+              name="playerName"
+              type="text"
+              placeholder="Player name"
+              required
+            />
+          </div>
         </div>
         <div>
           <button id="submit-button" type="submit">
