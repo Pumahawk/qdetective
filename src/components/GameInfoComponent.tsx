@@ -1,10 +1,13 @@
 import { PlayerImg } from "../core/core.tsx";
 
-export type GameInfoMode = "admin" | "not-admin" | "to-join";
+export type PlayerRoleMode = "admin" | "not-admin" | "no-role";
+
+export type GameStatusMode = "open" | "running" | "finished";
 
 export interface GameInfoProps {
   id: string;
-  mode: GameInfoMode;
+  role: PlayerRoleMode;
+  gameStatus: GameStatusMode;
   name: string;
   players: {
     id: string;
@@ -17,7 +20,7 @@ export interface GameInfoProps {
 }
 
 export function GameInfoComponent(
-  { id, mode, name, players, onJoin, onShare }: GameInfoProps,
+  { id, role: mode, name, players, onJoin, onShare }: GameInfoProps,
 ) {
   return (
     <div>
@@ -42,7 +45,7 @@ export function GameInfoComponent(
           Share
         </button>
 
-        {mode === "to-join" && (
+        {mode === "no-role" && (
           <button
             type="button"
             onClick={() => onJoin && onJoin(id)}

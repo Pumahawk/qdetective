@@ -6,6 +6,7 @@ export interface AllStateResponseDto {
 
 export interface StatusGameDto {
   name: string;
+  status: "open" | "running" | "finished";
   adminId: string;
   players: PlayerDto[];
 }

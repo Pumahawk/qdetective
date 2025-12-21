@@ -13,7 +13,11 @@ import {
   setStoreGamePlayerInfo,
   watchGame,
 } from "../services/AppService.ts";
-import { GameInfoComponent, type GameInfoMode } from "./GameInfoComponent.tsx";
+import {
+  GameInfoComponent,
+  type GameStatusMode,
+  type PlayerRoleMode,
+} from "./GameInfoComponent.tsx";
 import { GameListComponent } from "./GameListComponent.tsx";
 import {
   GameSetupComponent,
@@ -47,7 +51,8 @@ interface GameInfoState {
   state: "game-info";
   id: string;
   name: string;
-  mode: GameInfoMode;
+  mode: PlayerRoleMode;
+  gameStatus: GameStatusMode;
   players: PlayerInfo[];
 }
 
@@ -183,7 +188,7 @@ export function GameSetupRootComponent() {
       const storeInfo = getStoreGamePlayerInfo(gameId);
       const mode = storeInfo
         ? (storeInfo.admin ? "admin" : "not-admin")
-        : "to-join";
+        : "no-role";
 
       console.log("storeInfo: ", storeInfo);
       console.log("admin: ", storeInfo?.admin);
@@ -193,6 +198,7 @@ export function GameSetupRootComponent() {
           state: "game-info",
           id: gameId,
           mode,
+          gameStatus: response.data.status,
           name: response.data.name,
           players: response.data.players,
         });
@@ -233,6 +239,7 @@ export function GameSetupRootComponent() {
             state: "game-info",
             mode: "admin",
             id: response.id,
+            gameStatus: response.data.status,
             name: response.data.name,
             players: response.data.players,
           });
@@ -249,6 +256,7 @@ export function GameSetupRootComponent() {
             state: "game-info",
             mode: "not-admin",
             id: response.id,
+            gameStatus: response.data.status,
             name: response.data.name,
             players: response.data.players,
           });
@@ -281,7 +289,8 @@ export function GameSetupRootComponent() {
 
             {view.state === "game-info" && (
               <GameInfoComponent
-                mode={view.mode}
+                role={view.mode}
+                gameStatus={view.gameStatus}
                 name={view.name}
                 id={view.id}
                 players={view.players}

@@ -46,6 +46,7 @@ export async function joinGame(address: string, status: {
   const bodyRequest: StatusGameDto = {
     name: gameResponse.data.name,
     adminId: gameResponse.data.adminId,
+    status: gameResponse.data.status,
     players: [...gameResponse.data.players, {
       id: status.playerId,
       name: status.playerName,
@@ -70,6 +71,7 @@ export function createGame(address: string, status: {
   const bodyRequest: StatusGameDto = {
     name: status.gameName,
     adminId: status.playerId,
+    status: "open",
     players: [{
       id: status.playerId,
       name: status.playerName,
