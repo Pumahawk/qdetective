@@ -17,10 +17,13 @@ export interface GameInfoProps {
 
   onJoin?: (gameId: string) => void;
   onShare?: (gameId: string) => void;
+  onStart?: (gameId: string) => void;
+  onEnter?: (gameId: string) => void;
 }
 
 export function GameInfoComponent(
-  { id, role: mode, name, players, onJoin, onShare }: GameInfoProps,
+  { id, role, gameStatus, name, players, onJoin, onShare, onEnter, onStart }:
+    GameInfoProps,
 ) {
   return (
     <div>
@@ -45,24 +48,37 @@ export function GameInfoComponent(
           Share
         </button>
 
-        {mode === "no-role" && (
-          <button
-            type="button"
-            onClick={() => onJoin && onJoin(id)}
-          >
+        {gameStatus === "open" && (
+          <div>
+            {role === "no-role" && (
+              <button
+                type="button"
+                onClick={() => onJoin && onJoin(id)}
+              >
+                Join
+              </button>
+            )}
+
+            {role === "admin" && (
+              <button
+                type="button"
+                onClick={() => onStart && onStart(id)}
+              >
+                Start Game
+              </button>
+            )}
+
+            {role === "not-admin" && <div>Waiting...</div>}
+          </div>
+        )}
+      </div>
+      {gameStatus === "running" && (
+        <div>
+          <button type="button" onClick={() => onEnter && onEnter(id)}>
             Join
           </button>
-        )}
-
-        {mode === "admin" && (
-          <button type="button">
-            {/* onClick={() => onStart && start(id)} */}
-            Start Game
-          </button>
-        )}
-
-        {mode === "not-admin" && <div>Waiting...</div>}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
