@@ -109,7 +109,14 @@ const GameSetupRootController = {
   },
 };
 
-export function GameSetupRootComponent() {
+export interface GameSetupRootProps {
+  onStartGame?: (address: string, gameId: string) => void;
+  onOpenGame?: (address: string, gameId: string) => void;
+}
+
+export function GameSetupRootComponent(
+  { onOpenGame, onStartGame }: GameSetupRootProps,
+) {
   const [view, setView] = useState<ViewState | null>(null);
   const [loading, setLoading] = useState(true);
   const addressRef = useRef<string | null>(null);
@@ -296,6 +303,12 @@ export function GameSetupRootComponent() {
                 players={view.players}
                 onJoin={(gameId) => handleOnJoin(gameId)}
                 onShare={() => handleOnShare()}
+                onStart={(gameId) =>
+                  onStartGame && addressRef.current &&
+                  onStartGame(addressRef.current, gameId)}
+                onEnter={(gameId) =>
+                  onOpenGame && addressRef.current &&
+                  onOpenGame(addressRef.current, gameId)}
               />
             )}
 

@@ -1,8 +1,8 @@
 import "./App.css";
-import { GameSetupRootComponent } from "./components/GameSetupRootComponent.tsx";
+import { AppRootComponent } from "./components/AppRootComponent.tsx";
 
 function App() {
-  return <GameSetupRootComponent />;
+  return <AppRootComponent />;
 }
 
 // function App() {
