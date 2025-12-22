@@ -140,7 +140,8 @@ export function GameSetupRootComponent(
             if (
               view.gameStatus === "open" && message.message.status === "running"
             ) {
-              onOpenGame && onOpenGame(addressRef.current, gameId);
+              onOpenGame && addressRef.current &&
+                onOpenGame(addressRef.current, gameId);
             }
             setView((prev) =>
               prev && {
