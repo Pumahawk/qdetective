@@ -1,7 +1,7 @@
 import { DiceImg } from "../core/core.tsx";
 
 export interface DiceRollProp {
-  dice?: number;
+  dice?: [number, number];
   onRoll?: () => void;
   onContinue?: () => void;
 }
@@ -9,10 +9,30 @@ export interface DiceRollProp {
 export function DiceRollComponent({ dice, onRoll, onContinue }: DiceRollProp) {
   return (
     <div>
-      <div>
-        {dice != undefined && <DiceImg value={dice} />}
-        {dice != undefined && <div>{dice}</div>}
-      </div>
+      {dice != undefined && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              padding: "5px",
+            }}
+          >
+            <DiceImg value={dice[0]} />
+          </div>
+          <div
+            style={{
+              padding: "5px",
+            }}
+          >
+            <DiceImg value={dice[1]} />
+          </div>
+        </div>
+      )}
       <button
         type="button"
         onClick={() =>
