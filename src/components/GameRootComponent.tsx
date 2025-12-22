@@ -1,7 +1,7 @@
 import { type BoardModel } from "../core/board-core.ts";
 import type { StateGameDto } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
-import { rollDiceFase } from "../services/AppService.ts";
+import { movePlayerIfPossible, rollDiceFase } from "../services/AppService.ts";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
 
@@ -18,12 +18,12 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
     rollDiceFase(gameId);
   }
 
-  function handleClickOnBoard(x: numebr, y: number) {
+  function handleClickOnBoard(x: number, y: number) {
     if (
       state?.state === "running" && state.round.state === "move" &&
       state.round.playerId === myId
     ) {
-      movePlayerIfPossible(gameId, myId);
+      movePlayerIfPossible(gameId, x, y);
     }
   }
 

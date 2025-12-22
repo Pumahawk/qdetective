@@ -1,3 +1,9 @@
+export interface Block {
+  type: string;
+  x: number;
+  y: number;
+}
+
 export function getMap() {
   return [
     [ "MNW","MN","MN","MN","MN","MN","MN","MN","x","MN","MN","MN","MN","MN","MN","x","MN","MN","MN","MN","MN","MN","MN","MN","MNE" ],
@@ -28,3 +34,26 @@ export function getMap() {
   ];
 }
 
+export function isValidMovementBlock(x: number, y: number): boolean {
+  const map = getMap();
+
+  if (map.length <= y || map[0].length <= x) {
+    return false;
+  }
+
+  const block = map[y][x];
+  return block === "x" || block === "S";
+}
+
+export function getRoundBlock(x: number, y: number): Block[] {
+  const map = getMap();
+  return Array(9).map((_, i) => [i % 3 - 1 + y, Math.floor(i / 3) - 1 + x])
+    .filter(
+      (c) =>
+        c[0] >= 0 && c[0] < map[0].length && c[1] >= 0 && c[1] < map.length,
+    ).map((c) => ({
+      type: map[c[1]][c[0]],
+      x: c[1],
+      y: c[0],
+    }));
+}

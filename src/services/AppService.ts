@@ -2,12 +2,13 @@ import { prepareStartingDeckGameState } from "../core/cards.ts";
 import { getPlayerInitialPosition } from "../core/characters.ts";
 import type {
   AllStateResponseDto,
-  GetStatusResponseDto as GetStatusResponseDto,
+  GetStatusResponseDto,
   MessageDto,
   NewStatusResponseDTO,
   StateGameDto,
 } from "../core/dto.ts";
 import { type RunningStateGameDto } from "../core/game-dto.ts";
+import { getRoundBlock, isValidMovementBlock } from "../core/map.ts";
 
 interface DiceValue {
   total: number;
@@ -86,9 +87,9 @@ export async function joinGame(status: {
       }],
     };
 
-    const result = await StateServerClient.post<NewStatusResponseDTO>(
-      "status/" + status.gameId,
+    const result = await client.saveState(
       bodyRequest,
+      status.gameId,
     );
 
     setStoreGamePlayerInfo(status.gameId, playerId);
@@ -117,10 +118,7 @@ export async function createGame(status: {
     }],
   };
 
-  const result = await StateServerClient.post<NewStatusResponseDTO>(
-    "status",
-    bodyRequest,
-  );
+  const result = await client.saveState(bodyRequest);
 
   setStoreGamePlayerInfo(result.id, playerId);
 
@@ -130,7 +128,7 @@ export async function createGame(status: {
 export async function getGame(
   gameId: string,
 ): Promise<GetStatusResponseDto> {
-  return await StateServerClient.get<GetStatusResponseDto>("status/" + gameId);
+  return await client.getState(gameId);
 }
 
 export async function startGame(
@@ -159,9 +157,9 @@ export async function startGame(
       },
     };
 
-    return await StateServerClient.post<RunningStateGameDto>(
-      "status/" + gameId,
+    return await client.saveState(
       game,
+      gameId,
     );
   } else {
     throw new Error("Invalid state " + gameInfo.data.state);
@@ -173,18 +171,24 @@ export function getGamesFromServer(): Promise<AllStateResponseDto> {
 }
 
 const client = {
-  async getState(gameId: string): Promise<StateGameDto> {
+  async getState(gameId: string): Promise<GetStatusResponseDto> {
     const response = await fetch(getAddressOrThrow() + "/status/" + gameId);
     const state = await response.json() as GetStatusResponseDto;
-    return state.data;
+    return state;
   },
 
-  async saveState(gameId: string, state: StateGameDto): Promise<void> {
-    await fetch(getAddressOrThrow() + "/status/" + gameId, {
-      method: "POST",
-      body: JSON.stringify({ data: state }),
-    });
-    return;
+  async saveState(
+    state: StateGameDto,
+    gameId?: string,
+  ): Promise<GetStatusResponseDto> {
+    const response = await fetch(
+      getAddressOrThrow() + "/status" + gameId ? ("/" + gameId) : "",
+      {
+        method: "POST",
+        body: JSON.stringify({ data: state }),
+      },
+    );
+    return await response.json() as GetStatusResponseDto;
   },
 
   async getAllStates(): Promise<AllStateResponseDto> {
@@ -276,13 +280,44 @@ export async function rollDiceFase(gameId: string): Promise<void> {
         selection: [],
       },
     };
-    client.saveState(gameId, body);
+    client.saveState(body, gameId);
   } else {
     throw new Error("Invalid game state");
   }
 }
 
-export async function movePlayerIfPossible(gameId: string, playerId: string) {
+export async function movePlayerIfPossible(
+  gameId: string,
+  x: number,
+  y: number,
+) {
+  const game = await getGame(gameId);
+  if (game.data.state === "running" && game.data.round.state === "move") {
+    if (game.data.round.step <= 0) {
+      return;
+    }
+
+    const playerId = game.data.round.playerId;
+    const player = game.data.players.find((p) => p.id === playerId)!;
+
+    if (!isValidMovementBlock(x, y)) {
+      return;
+    }
+
+    if (
+      Math.abs(player.position[0] - x) + Math.abs(player.position[1] - y) !== 1
+    ) {
+      return;
+    }
+
+    player.position = [x, y];
+    game.data.round.highlight = getRoundBlock(x, y).filter((b) =>
+      b.type === "x" || b.type == "S"
+    ).map((b) => [b.x, b.y]);
+    client.saveState(game.data);
+  } else {
+    console.error("Invalid game state");
+  }
 }
 
 function randomDice(): DiceValue {
