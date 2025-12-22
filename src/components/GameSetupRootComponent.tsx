@@ -1,16 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Loading } from "../core/core.tsx";
-import type {
-  GetStatusResponseDto,
-  NewStatusResponseDTO,
-} from "../core/dto.ts";
 import {
   createGame,
   getGame,
   getGamesFromServer,
   getStoreGamePlayerInfo,
   joinGame,
-  setStoreGamePlayerInfo,
   watchGame,
 } from "../services/AppService.ts";
 import {
@@ -71,43 +66,6 @@ interface GameInfo {
   id: string;
   name: string;
 }
-
-const GameSetupRootController = {
-  async joinGame(address: string, joinInfo: {
-    gameId: string;
-    playerAsset: number;
-    playerName: string;
-  }): Promise<GetStatusResponseDto> {
-    const playerId = crypto.randomUUID();
-
-    const result = await joinGame(address, {
-      playerId,
-      gameId: joinInfo.gameId,
-      playerAsset: joinInfo.playerAsset,
-      playerName: joinInfo.playerName,
-    });
-
-    setStoreGamePlayerInfo(joinInfo.gameId, playerId, false);
-
-    return result;
-  },
-
-  async createGame(address: string, createInfo: {
-    playerName: string;
-    playerAssetId: number;
-    gameName: string;
-  }): Promise<NewStatusResponseDTO> {
-    const playerId = crypto.randomUUID();
-    const result = await createGame(address, {
-      playerId,
-      ...createInfo,
-    });
-
-    setStoreGamePlayerInfo(result.id, playerId, true);
-
-    return result;
-  },
-};
 
 export interface GameSetupRootProps {
   onStartGame?: (address: string, gameId: string) => void;
@@ -243,7 +201,7 @@ export function GameSetupRootComponent(
 
     switch (e.mode) {
       case "create":
-        GameSetupRootController.createGame(addressRef.current, {
+        createGame(addressRef.current, {
           gameName: e.gameName,
           playerAssetId: e.playerAssetId,
           playerName: e.playerName,
@@ -260,7 +218,7 @@ export function GameSetupRootComponent(
         break;
 
       case "join":
-        GameSetupRootController.joinGame(addressRef.current, {
+        joinGame(addressRef.current, {
           gameId: e.gameId,
           playerAsset: e.playerAssetId,
           playerName: e.playerName,

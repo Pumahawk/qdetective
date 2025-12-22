@@ -36,11 +36,12 @@ export function getItemById(
 
 export async function joinGame(address: string, status: {
   gameId: string;
-  playerId: string;
   playerAsset: number;
   playerName: string;
 }): Promise<GetStatusResponseDto> {
   const client = StateServerClient(address);
+
+  const playerId = crypto.randomUUID();
 
   const gameResponse = await getGame(address, status.gameId);
 
@@ -50,41 +51,50 @@ export async function joinGame(address: string, status: {
     status: gameResponse.data.status,
     targets: [],
     players: [...gameResponse.data.players, {
-      id: status.playerId,
+      id: playerId,
       name: status.playerName,
       assetId: status.playerAsset,
       deck: [],
     }],
   };
 
-  return client.post<NewStatusResponseDTO>(
+  const result = await client.post<NewStatusResponseDTO>(
     "status/" + status.gameId,
     bodyRequest,
   );
+
+  setStoreGamePlayerInfo(status.gameId, playerId, false);
+
+  return result;
 }
 
-export function createGame(address: string, status: {
-  playerId: string;
+export async function createGame(address: string, status: {
   playerAssetId: number;
   playerName: string;
   gameName: string;
 }): Promise<NewStatusResponseDTO> {
+  const playerId = crypto.randomUUID();
+
   const client = StateServerClient(address);
 
   const bodyRequest: StatusGameDto = {
     name: status.gameName,
-    adminId: status.playerId,
+    adminId: playerId,
     status: "open",
     targets: [],
     players: [{
-      id: status.playerId,
+      id: playerId,
       name: status.playerName,
       assetId: status.playerAssetId,
       deck: [],
     }],
   };
 
-  return client.post<NewStatusResponseDTO>("status", bodyRequest);
+  const result = await client.post<NewStatusResponseDTO>("status", bodyRequest);
+
+  setStoreGamePlayerInfo(result.id, playerId, true);
+
+  return result;
 }
 
 export async function getGame(
