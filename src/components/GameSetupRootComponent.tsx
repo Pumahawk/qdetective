@@ -96,17 +96,18 @@ export function GameSetupRootComponent(
         gameId,
         (message) => {
           if (message.type === "status-update") {
-            if (
-              view.gameStatus === "open" && message.message.status === "running"
-            ) {
-              onOpenGame && onOpenGame(gameId);
-            }
-            setView((prev) =>
-              prev && {
-                ...prev,
-                players: message.message.players,
-              }
-            );
+            const storage = getStoreGamePlayerInfo(gameId);
+            const gamEstate = message.message;
+            setView({
+              state: "game-info",
+              id: gameId,
+              name: gamEstate.name,
+              players: gamEstate.players,
+              gameStatus: gamEstate.status,
+              mode: storage
+                ? gamEstate.adminId === storage.playerId ? "admin" : "not-admin"
+                : "no-role",
+            });
           }
         },
       );
