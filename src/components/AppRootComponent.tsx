@@ -3,7 +3,7 @@ import { Loading } from "../core/core.tsx";
 import { getGlobalServerAddress, startGame } from "../services/AppService.ts";
 import { GameSetupRootComponent } from "./GameSetupRootComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
-import { getGameIdFromUrl } from "../core/utils.ts";
+import { getGameIdFromUrl, redirectUrl } from "../core/utils.ts";
 
 type ViewState =
   | ServerSetupState
@@ -63,18 +63,14 @@ export function AppRootComponent() {
   function handleStartGame(gameId: string) {
     setLoading(true);
     startGame(gameId).then(() => {
-      const url = new URL(globalThis.window.location.href);
-      url.searchParams.set("gameId", gameId);
-      globalThis.window.location.href = url.toString();
+      redirectUrl({ gameId });
     }).finally(() => {
       setLoading(false);
     });
   }
 
   function handleOnServerSelected(address: string) {
-    const url = new URL(globalThis.window.location.href);
-    url.searchParams.set("address", address);
-    globalThis.window.location.href = url.toString();
+    redirectUrl({ address });
   }
 
   return (
