@@ -9,10 +9,19 @@ export function getGameIdFromUrl(): string | null {
 }
 
 export function redirectUrl(
-  { address, gameId }: { address?: string; gameId?: string },
+  params: { address?: string | null; gameId?: string | null },
 ) {
   const url = new URL(globalThis.window.location.href);
-  if (address) url.searchParams.set("address", address);
-  if (gameId) url.searchParams.set("gameId", gameId);
+
+  Object.entries(params).forEach(([param, value]) => {
+    if (value !== undefined) {
+      if (value === null) {
+        url.searchParams.delete(param);
+      } else {
+        url.searchParams.set(param, value);
+      }
+    }
+  });
+
   globalThis.window.location.href = url.toString();
 }

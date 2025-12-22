@@ -54,10 +54,7 @@ export function AppRootComponent() {
   }, []);
 
   function handleOpenGame(gameId: string) {
-    setView({
-      mode: "play",
-      gameId,
-    });
+    redirectUrl({ gameId });
   }
 
   function handleStartGame(gameId: string) {
@@ -70,7 +67,7 @@ export function AppRootComponent() {
   }
 
   function handleOnServerSelected(address: string) {
-    redirectUrl({ address });
+    redirectUrl({ address, gameId: null });
   }
 
   return (
