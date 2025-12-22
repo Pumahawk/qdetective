@@ -4,8 +4,9 @@ import type {
   GetStatusResponseDto as GetStatusResponseDto,
   MessageDto,
   NewStatusResponseDTO,
-  StatusGameDto,
+  StateGameDto,
 } from "../core/dto.ts";
+import type { RunningStateGameDto } from "../core/game-dto.ts";
 
 interface GlobalAppState {
   address: string | null;
@@ -67,27 +68,29 @@ export async function joinGame(status: {
 
   const gameResponse = await getGame(status.gameId);
 
-  const bodyRequest: StatusGameDto = {
-    name: gameResponse.data.name,
-    adminId: gameResponse.data.adminId,
-    status: gameResponse.data.status,
-    targets: [],
-    players: [...gameResponse.data.players, {
-      id: playerId,
-      name: status.playerName,
-      assetId: status.playerAsset,
-      deck: [],
-    }],
-  };
+  if (gameResponse.data.state === "open") {
+    const bodyRequest: StateGameDto = {
+      name: gameResponse.data.name,
+      adminId: gameResponse.data.adminId,
+      state: gameResponse.data.state,
+      players: [...gameResponse.data.players, {
+        id: playerId,
+        name: status.playerName,
+        assetId: status.playerAsset,
+      }],
+    };
 
-  const result = await StateServerClient.post<NewStatusResponseDTO>(
-    "status/" + status.gameId,
-    bodyRequest,
-  );
+    const result = await StateServerClient.post<NewStatusResponseDTO>(
+      "status/" + status.gameId,
+      bodyRequest,
+    );
 
-  setStoreGamePlayerInfo(status.gameId, playerId);
+    setStoreGamePlayerInfo(status.gameId, playerId);
 
-  return result;
+    return result;
+  } else {
+    throw new Error("Invalid game status " + gameResponse.data.state);
+  }
 }
 
 export async function createGame(status: {
@@ -97,16 +100,14 @@ export async function createGame(status: {
 }): Promise<NewStatusResponseDTO> {
   const playerId = crypto.randomUUID();
 
-  const bodyRequest: StatusGameDto = {
+  const bodyRequest: StateGameDto = {
     name: status.gameName,
     adminId: playerId,
-    status: "open",
-    targets: [],
+    state: "open",
     players: [{
       id: playerId,
       name: status.playerName,
       assetId: status.playerAssetId,
-      deck: [],
     }],
   };
 
@@ -130,24 +131,35 @@ export async function startGame(
   gameId: string,
 ) {
   const gameInfo = await getGame(gameId);
-  gameInfo.data.status = "running";
+  if (gameInfo.data.state === "open") {
+    const initialDeks = prepareStartingDeckGameState(
+      gameInfo.data.players.length,
+    );
 
-  const initialDeks = prepareStartingDeckGameState(
-    gameInfo.data.players.length,
-  );
+    let i = 0;
+    const playngPlayers = gameInfo.data.players.map((p) => ({
+      ...p,
+      deckIds: initialDeks.decks[i++],
+    }));
 
-  gameInfo.data.targets = initialDeks.target;
+    const game: RunningStateGameDto = {
+      ...gameInfo.data,
+      state: "running",
+      targets: initialDeks.target,
+      players: playngPlayers,
+      round: {
+        state: "dice",
+        playerId: gameInfo.data.adminId,
+      },
+    };
 
-  let i = 0;
-  gameInfo.data.players = gameInfo.data.players.map((p) => ({
-    ...p,
-    deck: initialDeks.decks[i++],
-  }));
-
-  return await StateServerClient.post<StatusGameDto>(
-    "status/" + gameId,
-    gameInfo.data,
-  );
+    return await StateServerClient.post<RunningStateGameDto>(
+      "status/" + gameId,
+      game,
+    );
+  } else {
+    throw new Error("Invalid state " + gameInfo.data.state);
+  }
 }
 
 export function getGamesFromServer(): Promise<AllStateResponseDto> {

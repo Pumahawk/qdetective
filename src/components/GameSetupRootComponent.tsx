@@ -47,7 +47,7 @@ interface GameInfoState {
   id: string;
   name: string;
   mode: PlayerRoleMode;
-  gameStatus: GameStatusMode;
+  gameState: GameStatusMode;
   players: PlayerInfo[];
 }
 
@@ -103,15 +103,15 @@ export function GameSetupRootComponent(
         (message) => {
           if (message.type === "status-update") {
             const storage = getStoreGamePlayerInfo(gameId);
-            const gamEstate = message.message;
+            const gameState = message.message;
             setView({
               state: "game-info",
               id: gameId,
-              name: gamEstate.name,
-              players: gamEstate.players,
-              gameStatus: gamEstate.status,
+              name: gameState.name,
+              players: gameState.players,
+              gameState: gameState.state,
               mode: storage
-                ? gamEstate.adminId === storage.playerId ? "admin" : "not-admin"
+                ? gameState.adminId === storage.playerId ? "admin" : "not-admin"
                 : "no-role",
             });
           }
@@ -146,7 +146,7 @@ export function GameSetupRootComponent(
           : storeInfo.playerId === response.data.adminId
           ? "admin"
           : "not-admin",
-        gameStatus: response.data.status,
+        gameState: response.data.state,
         name: response.data.name,
         players: response.data.players,
       });
@@ -220,7 +220,7 @@ export function GameSetupRootComponent(
             {view.state === "game-info" && (
               <GameInfoComponent
                 role={view.mode}
-                gameStatus={view.gameStatus}
+                gameStatus={view.gameState}
                 name={view.name}
                 id={view.id}
                 players={view.players}

@@ -1,3 +1,5 @@
+import type { Targets } from "./dto.ts";
+
 type CardType = "item" | "room" | "person";
 
 interface CardBase {
@@ -38,12 +40,10 @@ const cards: CardBase[] = [
 
 export type Deck = number[];
 
-type Target = number[];
-
 export function prepareStartingDeckGameState(
   players: number,
 ): {
-  target: Target;
+  target: Targets;
   decks: Deck[];
 } {
   const cardsId = cards.map((c, i) => ({ ...c, id: i }));
@@ -51,7 +51,7 @@ export function prepareStartingDeckGameState(
   const rooms = shuffle(cardsId.filter((c) => c.type === "room"));
   const people = shuffle(cardsId.filter((c) => c.type === "person"));
 
-  const target: Target = [
+  const target: Targets = [
     items.pop()!.id,
     rooms.pop()!.id,
     people.pop()!.id,
