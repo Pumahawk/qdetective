@@ -1,3 +1,4 @@
+import { prepareStartingDeckGameState } from "../core/cards.ts";
 import type {
   AllStateResponseDto,
   GetStatusResponseDto as GetStatusResponseDto,
@@ -47,10 +48,12 @@ export async function joinGame(address: string, status: {
     name: gameResponse.data.name,
     adminId: gameResponse.data.adminId,
     status: gameResponse.data.status,
+    targets: [],
     players: [...gameResponse.data.players, {
       id: status.playerId,
       name: status.playerName,
       assetId: status.playerAsset,
+      deck: [],
     }],
   };
 
@@ -72,10 +75,12 @@ export function createGame(address: string, status: {
     name: status.gameName,
     adminId: status.playerId,
     status: "open",
+    targets: [],
     players: [{
       id: status.playerId,
       name: status.playerName,
       assetId: status.playerAssetId,
+      deck: [],
     }],
   };
 
@@ -89,6 +94,29 @@ export async function getGame(
   const client = StateServerClient(address);
 
   return await client.get<GetStatusResponseDto>("status/" + gameId);
+}
+
+export async function startGame(
+  address: string,
+  gameId: string,
+) {
+  const gameInfo = await getGame(address, gameId);
+  gameInfo.data.status = "running";
+
+  const initialDeks = prepareStartingDeckGameState(
+    gameInfo.data.players.length,
+  );
+
+  gameInfo.data.targets = initialDeks.target;
+
+  let i = 0;
+  gameInfo.data.players = gameInfo.data.players.map((p) => ({
+    ...p,
+    deck: initialDeks.decks[i++],
+  }));
+
+  const client = StateServerClient(address);
+  return await client.post<StatusGameDto>("status/" + gameId, gameInfo.data);
 }
 
 export function getGamesFromServer(

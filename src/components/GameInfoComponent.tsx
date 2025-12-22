@@ -75,7 +75,7 @@ export function GameInfoComponent(
       {gameStatus === "running" && (
         <div>
           <button type="button" onClick={() => onEnter && onEnter(id)}>
-            Join
+            Open
           </button>
         </div>
       )}

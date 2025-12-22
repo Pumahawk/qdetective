@@ -137,6 +137,11 @@ export function GameSetupRootComponent(
         gameId,
         (message) => {
           if (message.type === "status-update") {
+            if (
+              view.gameStatus === "open" && message.message.status === "running"
+            ) {
+              onOpenGame && onOpenGame(addressRef.current, gameId);
+            }
             setView((prev) =>
               prev && {
                 ...prev,

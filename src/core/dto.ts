@@ -9,12 +9,14 @@ export interface StatusGameDto {
   status: "open" | "running" | "finished";
   adminId: string;
   players: PlayerDto[];
+  targets: number[];
 }
 
 export interface PlayerDto {
   id: string;
   name: string;
   assetId: number;
+  deck: number[];
 }
 
 export interface NewStatusResponseDTO {
