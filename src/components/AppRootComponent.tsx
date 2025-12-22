@@ -3,6 +3,7 @@ import { Loading } from "../core/core.tsx";
 import { getGlobalServerAddress, startGame } from "../services/AppService.ts";
 import { GameSetupRootComponent } from "./GameSetupRootComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
+import { getGameIdFromUrl } from "../core/utils.ts";
 
 type ViewState =
   | ServerSetupState
@@ -33,10 +34,18 @@ export function AppRootComponent() {
 
   useEffect(() => {
     const address = getGlobalServerAddress();
+    const gameId = getGameIdFromUrl();
     if (address) {
-      setView({
-        mode: "game-setup",
-      });
+      if (gameId) {
+        setView({
+          mode: "play",
+          gameId: gameId,
+        });
+      } else {
+        setView({
+          mode: "game-setup",
+        });
+      }
     } else {
       setView({
         mode: "server-setup",
@@ -54,10 +63,9 @@ export function AppRootComponent() {
   function handleStartGame(gameId: string) {
     setLoading(true);
     startGame(gameId).then(() => {
-      setView({
-        mode: "play",
-        gameId,
-      });
+      const url = new URL(globalThis.window.location.href);
+      url.searchParams.set("gameId", gameId);
+      globalThis.window.location.href = url.toString();
     }).finally(() => {
       setLoading(false);
     });
