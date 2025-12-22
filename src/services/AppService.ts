@@ -14,7 +14,6 @@ interface GlobalAppState {
 interface GameInfoLocalStorage {
   gameId: string;
   playerId: string;
-  admin: boolean;
 }
 
 const globalAppState: GlobalAppState = {
@@ -86,7 +85,7 @@ export async function joinGame(status: {
     bodyRequest,
   );
 
-  setStoreGamePlayerInfo(status.gameId, playerId, false);
+  setStoreGamePlayerInfo(status.gameId, playerId);
 
   return result;
 }
@@ -116,7 +115,7 @@ export async function createGame(status: {
     bodyRequest,
   );
 
-  setStoreGamePlayerInfo(result.id, playerId, true);
+  setStoreGamePlayerInfo(result.id, playerId);
 
   return result;
 }
@@ -205,12 +204,10 @@ const StateServerClient = {
 export function setStoreGamePlayerInfo(
   gameId: string,
   playerId: string,
-  admin: boolean,
 ) {
   const info: GameInfoLocalStorage = {
     gameId,
     playerId,
-    admin,
   };
 
   globalThis.localStorage.setItem(

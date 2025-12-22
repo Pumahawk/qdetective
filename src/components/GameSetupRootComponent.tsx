@@ -128,18 +128,17 @@ export function GameSetupRootComponent(
     console.log("Handle handleOnOpenGame");
     setLoading(true);
     const storeInfo = getStoreGamePlayerInfo(gameId);
-    const mode = storeInfo
-      ? (storeInfo.admin ? "admin" : "not-admin")
-      : "no-role";
 
     console.log("storeInfo: ", storeInfo);
-    console.log("admin: ", storeInfo?.admin);
-    console.log("mode: ", mode);
     getGame(gameId).then((response) => {
       setView({
         state: "game-info",
         id: gameId,
-        mode,
+        mode: storeInfo === null
+          ? "no-role"
+          : storeInfo.playerId === response.data.adminId
+          ? "admin"
+          : "not-admin",
         gameStatus: response.data.status,
         name: response.data.name,
         players: response.data.players,
