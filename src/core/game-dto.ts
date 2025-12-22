@@ -8,6 +8,7 @@ export type RoundState =
 
 export interface PlayingPlayerDto extends PlayerDto {
   deckIds: number[];
+  position: [number, number];
 }
 
 export interface RunningStateGameDto extends BaseStateGameDto<"running"> {
@@ -26,6 +27,8 @@ export interface DiceRoundState extends RoundBase<"dice"> {
 
 export interface MoveRoundState extends RoundBase<"move"> {
   step: number;
+  selection: [number, number][];
+  highlight: [number, number][];
 }
 
 interface CallRoundState<T> extends RoundBase<"call"> {

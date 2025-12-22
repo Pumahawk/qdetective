@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Loading } from "../core/core.tsx";
-import { getGlobalServerAddress, startGame } from "../services/AppService.ts";
+import {
+  getGlobalServerAddress,
+  getStoreGamePlayerInfo,
+  startGame,
+} from "../services/AppService.ts";
 import { GameSetupRootComponent } from "./GameSetupRootComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
 import { getUrlParameters, redirectUrl } from "../core/utils.ts";
@@ -33,6 +37,7 @@ interface LoadingViewState {
 export function AppRootComponent() {
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<ViewState>({ mode: "loading" });
+  const storage = view.mode === "play" && getStoreGamePlayerInfo(view.gameId);
 
   useEffect(() => {
     const address = getGlobalServerAddress();
@@ -100,7 +105,9 @@ export function AppRootComponent() {
         </div>
       )}
 
-      {view.mode === "play" && <GameRootComponent gameId={view.gameId} />}
+      {view.mode === "play" && storage && (
+        <GameRootComponent playerId={storage.playerId} gameId={view.gameId} />
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ const boardSizeX = 25 * blockSize;
 const boardSizeY = 25 * blockSize;
 
 export interface BoardProps {
-  model: BoardModel;
+  model?: BoardModel;
   onBoardClick?: (x: number, y: number) => void;
 }
 

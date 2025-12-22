@@ -1,4 +1,5 @@
 import { prepareStartingDeckGameState } from "../core/cards.ts";
+import { getPlayerInitialPosition } from "../core/characters.ts";
 import type {
   AllStateResponseDto,
   GetStatusResponseDto as GetStatusResponseDto,
@@ -137,8 +138,9 @@ export async function startGame(
     );
 
     let i = 0;
-    const playngPlayers = gameInfo.data.players.map((p) => ({
+    const playngPlayers = gameInfo.data.players.map((p, i) => ({
       ...p,
+      position: getPlayerInitialPosition(i),
       deckIds: initialDeks.decks[i++],
     }));
 
