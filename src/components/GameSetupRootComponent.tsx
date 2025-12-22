@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loading } from "../core/core.tsx";
 import {
   createGame,
@@ -18,17 +18,16 @@ import {
   GameSetupComponent,
   type OnConfirmEvent,
 } from "./GameSetupComponent.tsx";
-import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
 
 type ViewState =
-  | ServerSetupState
+  | LoadingState
   | GameListState
   | GameInfoState
   | GameSetupJoinState
   | GameSetupCreateState;
 
-interface ServerSetupState {
-  state: "server-setup";
+interface LoadingState {
+  state: "loading";
 }
 
 interface GameListState {
@@ -68,38 +67,39 @@ interface GameInfo {
 }
 
 export interface GameSetupRootProps {
-  onStartGame?: (address: string, gameId: string) => void;
-  onOpenGame?: (address: string, gameId: string) => void;
+  onStartGame?: (gameId: string) => void;
+  onOpenGame?: (gameId: string) => void;
 }
 
 export function GameSetupRootComponent(
   { onOpenGame, onStartGame }: GameSetupRootProps,
 ) {
-  const [view, setView] = useState<ViewState | null>(null);
+  const [view, setView] = useState<ViewState>({ state: "loading" });
   const [loading, setLoading] = useState(true);
-  const addressRef = useRef<string | null>(null);
 
   const gameId = view?.state === "game-info" && view.id;
 
   useEffect(() => {
-    getInitialState().then((s) => {
-      setView(s);
+    getGamesFromServer().then((result) => {
+      setView({
+        state: "game-list",
+        games: result.status?.map((s) => ({ id: s.id, name: s.id })) ?? [],
+      });
+    }).finally(() => {
       setLoading(false);
     });
   }, []);
 
   useEffect(() => {
-    if (view?.state === "game-info" && gameId && addressRef.current) {
+    if (view?.state === "game-info" && gameId) {
       const { controller } = watchGame(
-        addressRef.current,
         gameId,
         (message) => {
           if (message.type === "status-update") {
             if (
               view.gameStatus === "open" && message.message.status === "running"
             ) {
-              onOpenGame && addressRef.current &&
-                onOpenGame(addressRef.current, gameId);
+              onOpenGame && onOpenGame(gameId);
             }
             setView((prev) =>
               prev && {
@@ -116,34 +116,6 @@ export function GameSetupRootComponent(
     }
   }, [gameId]);
 
-  async function getInitialState(): Promise<ViewState> {
-    addressRef.current = getAddressFromUrl();
-    if (addressRef.current) {
-      return {
-        state: "game-list",
-        games: await getGamesInfoForComponent(addressRef.current),
-      };
-    } else {
-      return { state: "server-setup" };
-    }
-  }
-
-  function handleOnServerSelected(address: string) {
-    console.log("Handle on server selected", address);
-    if (address) {
-      setLoading(true);
-      getGamesInfoForComponent(address).then((games) => {
-        const url = new URL(globalThis.window.location.href);
-        url.searchParams.set("address", address);
-        history.pushState({}, "", url.toString());
-        setView({ state: "game-list", games });
-        addressRef.current = address;
-      }).finally(() => {
-        setLoading(false);
-      });
-    }
-  }
-
   function handleOnNewGameAction() {
     console.log("Hansle on new game action");
     setView({
@@ -154,39 +126,35 @@ export function GameSetupRootComponent(
 
   function handleOnOpenGame(gameId: string) {
     console.log("Handle handleOnOpenGame");
-    if (addressRef.current) {
-      setLoading(true);
-      const storeInfo = getStoreGamePlayerInfo(gameId);
-      const mode = storeInfo
-        ? (storeInfo.admin ? "admin" : "not-admin")
-        : "no-role";
+    setLoading(true);
+    const storeInfo = getStoreGamePlayerInfo(gameId);
+    const mode = storeInfo
+      ? (storeInfo.admin ? "admin" : "not-admin")
+      : "no-role";
 
-      console.log("storeInfo: ", storeInfo);
-      console.log("admin: ", storeInfo?.admin);
-      console.log("mode: ", mode);
-      getGame(addressRef.current, gameId).then((response) => {
-        setView({
-          state: "game-info",
-          id: gameId,
-          mode,
-          gameStatus: response.data.status,
-          name: response.data.name,
-          players: response.data.players,
-        });
-      }).finally(() => {
-        setLoading(false);
+    console.log("storeInfo: ", storeInfo);
+    console.log("admin: ", storeInfo?.admin);
+    console.log("mode: ", mode);
+    getGame(gameId).then((response) => {
+      setView({
+        state: "game-info",
+        id: gameId,
+        mode,
+        gameStatus: response.data.status,
+        name: response.data.name,
+        players: response.data.players,
       });
-    }
+    }).finally(() => {
+      setLoading(false);
+    });
   }
 
   function handleOnJoin(gameId: string) {
-    if (addressRef.current) {
-      setView({
-        state: "game-setup",
-        mode: "join",
-        gameId: gameId,
-      });
-    }
+    setView({
+      state: "game-setup",
+      mode: "join",
+      gameId: gameId,
+    });
   }
 
   function handleOnShare() {
@@ -194,14 +162,9 @@ export function GameSetupRootComponent(
   }
 
   function handleOnConfirm(e: OnConfirmEvent) {
-    if (!addressRef.current) {
-      console.log("Invalid address value.", addressRef.current);
-      return;
-    }
-
     switch (e.mode) {
       case "create":
-        createGame(addressRef.current, {
+        createGame({
           gameName: e.gameName,
           playerAssetId: e.playerAssetId,
           playerName: e.playerName,
@@ -218,7 +181,7 @@ export function GameSetupRootComponent(
         break;
 
       case "join":
-        joinGame(addressRef.current, {
+        joinGame({
           gameId: e.gameId,
           playerAsset: e.playerAssetId,
           playerName: e.playerName,
@@ -244,12 +207,6 @@ export function GameSetupRootComponent(
       <div hidden={loading}>
         {view != null && (
           <div>
-            {view.state === "server-setup" && (
-              <ServerSetupComponent
-                onServerSelected={(address) => handleOnServerSelected(address)}
-              />
-            )}
-
             {view.state === "game-list" && (
               <GameListComponent
                 games={view.games}
@@ -268,11 +225,11 @@ export function GameSetupRootComponent(
                 onJoin={(gameId) => handleOnJoin(gameId)}
                 onShare={() => handleOnShare()}
                 onStart={(gameId) =>
-                  onStartGame && addressRef.current &&
-                  onStartGame(addressRef.current, gameId)}
+                  onStartGame &&
+                  onStartGame(gameId)}
                 onEnter={(gameId) =>
-                  onOpenGame && addressRef.current &&
-                  onOpenGame(addressRef.current, gameId)}
+                  onOpenGame &&
+                  onOpenGame(gameId)}
               />
             )}
 
@@ -289,14 +246,4 @@ export function GameSetupRootComponent(
       </div>
     </div>
   );
-}
-
-function getAddressFromUrl(): string | null {
-  const url = new URL(globalThis.window.location.href);
-  return url.searchParams.get("address");
-}
-
-async function getGamesInfoForComponent(address: string): Promise<GameInfo[]> {
-  const games = await getGamesFromServer(address);
-  return (games.status || []).map((s) => ({ id: s.id, name: s.id }));
 }

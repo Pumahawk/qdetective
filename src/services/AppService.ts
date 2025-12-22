@@ -7,10 +7,35 @@ import type {
   StatusGameDto,
 } from "../core/dto.ts";
 
+interface GlobalAppState {
+  address: string | null;
+}
+
 interface GameInfoLocalStorage {
   gameId: string;
   playerId: string;
   admin: boolean;
+}
+
+const globalAppState: GlobalAppState = {
+  address: null,
+};
+
+export function getGlobalServerAddress(): string | null {
+  return globalAppState.address;
+}
+
+export function setGlobalServerAddress(address: string) {
+  globalAppState.address = address;
+}
+
+function getAddressOrThrow(): string {
+  const address = getGlobalServerAddress();
+  if (address) {
+    return address;
+  } else {
+    throw new Error("Server address is mandatory.");
+  }
 }
 
 export function getPlayerById(
@@ -34,16 +59,14 @@ export function getItemById(
   };
 }
 
-export async function joinGame(address: string, status: {
+export async function joinGame(status: {
   gameId: string;
   playerAsset: number;
   playerName: string;
 }): Promise<GetStatusResponseDto> {
-  const client = StateServerClient(address);
-
   const playerId = crypto.randomUUID();
 
-  const gameResponse = await getGame(address, status.gameId);
+  const gameResponse = await getGame(status.gameId);
 
   const bodyRequest: StatusGameDto = {
     name: gameResponse.data.name,
@@ -58,7 +81,7 @@ export async function joinGame(address: string, status: {
     }],
   };
 
-  const result = await client.post<NewStatusResponseDTO>(
+  const result = await StateServerClient.post<NewStatusResponseDTO>(
     "status/" + status.gameId,
     bodyRequest,
   );
@@ -68,14 +91,12 @@ export async function joinGame(address: string, status: {
   return result;
 }
 
-export async function createGame(address: string, status: {
+export async function createGame(status: {
   playerAssetId: number;
   playerName: string;
   gameName: string;
 }): Promise<NewStatusResponseDTO> {
   const playerId = crypto.randomUUID();
-
-  const client = StateServerClient(address);
 
   const bodyRequest: StatusGameDto = {
     name: status.gameName,
@@ -90,7 +111,10 @@ export async function createGame(address: string, status: {
     }],
   };
 
-  const result = await client.post<NewStatusResponseDTO>("status", bodyRequest);
+  const result = await StateServerClient.post<NewStatusResponseDTO>(
+    "status",
+    bodyRequest,
+  );
 
   setStoreGamePlayerInfo(result.id, playerId, true);
 
@@ -98,19 +122,15 @@ export async function createGame(address: string, status: {
 }
 
 export async function getGame(
-  address: string,
   gameId: string,
 ): Promise<GetStatusResponseDto> {
-  const client = StateServerClient(address);
-
-  return await client.get<GetStatusResponseDto>("status/" + gameId);
+  return await StateServerClient.get<GetStatusResponseDto>("status/" + gameId);
 }
 
 export async function startGame(
-  address: string,
   gameId: string,
 ) {
-  const gameInfo = await getGame(address, gameId);
+  const gameInfo = await getGame(gameId);
   gameInfo.data.status = "running";
 
   const initialDeks = prepareStartingDeckGameState(
@@ -125,64 +145,62 @@ export async function startGame(
     deck: initialDeks.decks[i++],
   }));
 
-  const client = StateServerClient(address);
-  return await client.post<StatusGameDto>("status/" + gameId, gameInfo.data);
+  return await StateServerClient.post<StatusGameDto>(
+    "status/" + gameId,
+    gameInfo.data,
+  );
 }
 
-export function getGamesFromServer(
-  address: string,
-): Promise<AllStateResponseDto> {
-  return StateServerClient(address).get<AllStateResponseDto>("status");
+export function getGamesFromServer(): Promise<AllStateResponseDto> {
+  return StateServerClient.get<AllStateResponseDto>("status");
 }
 
-function StateServerClient(address: string) {
-  return {
-    async get<T>(path: string, conf?: {
-      signal?: AbortSignal;
-    }): Promise<T> {
-      const response = await fetch(address + "/" + path, {
-        signal: conf?.signal,
-      });
-      return response.json() as T;
-    },
+const StateServerClient = {
+  async get<T>(path: string, conf?: {
+    signal?: AbortSignal;
+  }): Promise<T> {
+    const response = await fetch(getAddressOrThrow() + "/" + path, {
+      signal: conf?.signal,
+    });
+    return response.json() as T;
+  },
 
-    async post<RS>(path: string, body?: unknown, conf?: {
-      signal?: AbortSignal;
-    }): Promise<RS> {
-      const response = await fetch(address + "/" + path, {
-        method: "POST",
-        signal: conf?.signal,
-        body: body as string && JSON.stringify({ data: body }),
-      });
-      return response.json() as RS;
-    },
+  async post<RS>(path: string, body?: unknown, conf?: {
+    signal?: AbortSignal;
+  }): Promise<RS> {
+    const response = await fetch(getAddressOrThrow() + "/" + path, {
+      method: "POST",
+      signal: conf?.signal,
+      body: body as string && JSON.stringify({ data: body }),
+    });
+    return response.json() as RS;
+  },
 
-    async watch<T>(path: string, callBack: (message: T) => void, conf?: {
-      signal?: AbortSignal;
-    }): Promise<void> {
-      const result = await fetch(address + "/" + path, {
-        signal: conf?.signal,
-      });
-      if (result.status == 200) {
-        const reader = result.body!.getReader();
-        const decoder = new TextDecoder();
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          const lines = decoder.decode(value, { stream: true });
-          const messages = lines.split("\n").filter((m) => !!m);
-          messages.forEach((message) => {
-            console.log("messsage: ", message);
-            const mj = JSON.parse(message) as T;
-            callBack(mj);
-          });
-        }
-      } else {
-        throw new Error("unable stream messages");
+  async watch<T>(path: string, callBack: (message: T) => void, conf?: {
+    signal?: AbortSignal;
+  }): Promise<void> {
+    const result = await fetch(getAddressOrThrow() + "/" + path, {
+      signal: conf?.signal,
+    });
+    if (result.status == 200) {
+      const reader = result.body!.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const lines = decoder.decode(value, { stream: true });
+        const messages = lines.split("\n").filter((m) => !!m);
+        messages.forEach((message) => {
+          console.log("messsage: ", message);
+          const mj = JSON.parse(message) as T;
+          callBack(mj);
+        });
       }
-    },
-  };
-}
+    } else {
+      throw new Error("unable stream messages");
+    }
+  },
+};
 
 export function setStoreGamePlayerInfo(
   gameId: string,
@@ -211,13 +229,11 @@ export function getStoreGamePlayerInfo(
 }
 
 export function watchGame(
-  address: string,
   id: string,
   callBack: (message: MessageDto) => void,
 ): { promise: Promise<void>; controller: AbortController } {
-  const client = StateServerClient(address);
   const abortController = new AbortController();
-  const result = client.watch<MessageDto>(
+  const result = StateServerClient.watch<MessageDto>(
     "status/" + id + "/messages",
     callBack,
   );

@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loading } from "../core/core.tsx";
-import { startGame } from "../services/AppService.ts";
+import { getGlobalServerAddress, startGame } from "../services/AppService.ts";
 import { GameSetupRootComponent } from "./GameSetupRootComponent.tsx";
+import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
 
-type ViewState = GameSetupViewState | PlayGameViewState;
+type ViewState =
+  | ServerSetupState
+  | GameSetupViewState
+  | PlayGameViewState
+  | LoadingViewState;
+
+interface ServerSetupState {
+  mode: "server-setup";
+}
 
 interface GameSetupViewState {
   mode: "game-setup";
@@ -11,46 +20,74 @@ interface GameSetupViewState {
 
 interface PlayGameViewState {
   mode: "play";
-  address: string;
   gameId: string;
+}
+
+interface LoadingViewState {
+  mode: "loading";
 }
 
 export function AppRootComponent() {
   const [loading, setLoading] = useState(false);
-  const [view, setView] = useState<ViewState>({ mode: "game-setup" });
+  const [view, setView] = useState<ViewState>({ mode: "loading" });
 
-  function handleOpenGame(address: string, gameId: string) {
+  useEffect(() => {
+    const address = getGlobalServerAddress();
+    if (address) {
+      setView({
+        mode: "game-setup",
+      });
+    } else {
+      setView({
+        mode: "server-setup",
+      });
+    }
+  }, []);
+
+  function handleOpenGame(gameId: string) {
     setView({
       mode: "play",
-      address,
       gameId,
     });
   }
 
-  function handleStartGame(address: string, gameId: string) {
+  function handleStartGame(gameId: string) {
     setLoading(true);
-    startGame(address, gameId).then(() => {
+    startGame(gameId).then(() => {
       setView({
         mode: "play",
         gameId,
-        address,
       });
     }).finally(() => {
       setLoading(false);
     });
   }
 
+  function handleOnServerSelected(address: string) {
+    const url = new URL(globalThis.window.location.href);
+    url.searchParams.set("address", address);
+    globalThis.window.location.href = url.toString();
+  }
+
   return (
     <div>
-      <div hidden={!loading}>
+      <div hidden={!loading && view.mode !== "loading"}>
         <Loading />
       </div>
+
+      {view.mode === "server-setup" && (
+        <div hidden={loading}>
+          <ServerSetupComponent
+            onServerSelected={(address) => handleOnServerSelected(address)}
+          />
+        </div>
+      )}
 
       {view.mode === "game-setup" && (
         <div hidden={loading}>
           <GameSetupRootComponent
-            onOpenGame={(address, gameId) => handleOpenGame(address, gameId)}
-            onStartGame={(address, gameId) => handleStartGame(address, gameId)}
+            onOpenGame={(gameId) => handleOpenGame(gameId)}
+            onStartGame={(gameId) => handleStartGame(gameId)}
           />
         </div>
       )}
