@@ -1,14 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { type BoardModel } from "../core/board-core.ts";
 import type { StateGameDto } from "../core/dto.ts";
-import { watchGame } from "../services/AppService.ts";
+import { rollDice, watchGame } from "../services/AppService.ts";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
-
-interface DiceValue {
-  total: number;
-  dices: [number, number];
-}
 
 export interface GameRootProps {
   playerId: string;
@@ -16,7 +11,6 @@ export interface GameRootProps {
 }
 export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
   const [state, setState] = useState<StateGameDto | null>(null);
-  const [dice, setDice] = useState<DiceValue | undefined>(undefined);
 
   const boardModel = useMemo<BoardModel | undefined>(() => {
     return state && state.state === "running"
@@ -39,7 +33,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
       }
     });
     return () => res.controller.abort();
-  });
+  }, []);
 
   return (
     <div>
@@ -51,8 +45,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                 {state.round.state === "dice" &&
                   state.round.playerId === myId && (
                   <DiceRollComponent
-                    dice={dice?.dices}
-                    onRoll={() => setDice(randomDice())}
+                    onRoll={() => rollDice(gameId)}
                   />
                 )}
                 <BoardComponent
@@ -66,13 +59,4 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
         : <div>Loading...</div>}
     </div>
   );
-}
-
-function randomDice(): DiceValue {
-  const dice1 = Math.floor(Math.random() * 6 + 1);
-  const dice2 = Math.floor(Math.random() * 6 + 1);
-  return {
-    dices: [dice1, dice2],
-    total: dice1 + dice2,
-  };
 }

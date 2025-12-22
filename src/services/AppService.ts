@@ -7,7 +7,12 @@ import type {
   NewStatusResponseDTO,
   StateGameDto,
 } from "../core/dto.ts";
-import type { RunningStateGameDto } from "../core/game-dto.ts";
+import { type RunningStateGameDto } from "../core/game-dto.ts";
+
+interface DiceValue {
+  total: number;
+  dices: [number, number];
+}
 
 interface GlobalAppState {
   address: string | null;
@@ -137,11 +142,10 @@ export async function startGame(
       gameInfo.data.players.length,
     );
 
-    let i = 0;
     const playngPlayers = gameInfo.data.players.map((p, i) => ({
       ...p,
       position: getPlayerInitialPosition(i),
-      deckIds: initialDeks.decks[i++],
+      deckIds: initialDeks.decks[i],
     }));
 
     const game: RunningStateGameDto = {
@@ -251,5 +255,35 @@ export function watchGame(
   return {
     promise: result,
     controller: abortController,
+  };
+}
+
+export async function rollDice(gameId: string): Promise<void> {
+  const game = (await getGame(gameId)).data;
+
+  if (game.state === "running" && game.round.state === "dice") {
+    const dice = randomDice();
+    const body: RunningStateGameDto = {
+      ...game,
+      round: {
+        ...game.round,
+        state: "move",
+        step: dice.total,
+        highlight: [],
+        selection: [],
+      },
+    };
+    StateServerClient.post("status/" + gameId, body);
+  } else {
+    throw new Error("Invalid game state");
+  }
+}
+
+function randomDice(): DiceValue {
+  const dice1 = Math.floor(Math.random() * 6 + 1);
+  const dice2 = Math.floor(Math.random() * 6 + 1);
+  return {
+    dices: [dice1, dice2],
+    total: dice1 + dice2,
   };
 }
