@@ -1,42 +1,53 @@
-import { type RefObject, useEffect, useRef } from "react";
-import { BoardComponentImpl } from "../core/board-core.ts";
+import { useEffect, useRef, useState } from "react";
+import { BoardComponentImpl, type BoardModel } from "../core/board-core.ts";
 
 const blockSize = 16;
 const boardSizeX = 25 * blockSize;
 const boardSizeY = 25 * blockSize;
 
 export interface BoardProps {
-  ref?: RefObject<Promise<BoardComponentImpl> | null>;
+  model: BoardModel;
   onBoardClick?: (x: number, y: number) => void;
 }
 
-export function BoardComponent({ onBoardClick, ref }: BoardProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export function BoardComponent({ model, onBoardClick }: BoardProps) {
+  const [ready, setReady] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const boardRef = useRef<BoardComponentImpl | null>(null);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
       const bcmp = BoardComponentImpl.of(canvas, {
         onBoardClick,
       });
-      if (ref) {
-        ref.current = bcmp;
-      }
+      bcmp.then((boardComponent) => {
+        boardRef.current = boardComponent;
+        setReady(true);
+      });
     }
   }, []);
+
+  useEffect(() => {
+    boardRef.current?.draw(model);
+  }, [ready, model]);
+
   return (
-    <canvas
-      onClick={(e) =>
-        handleClickOnCanvas(e.currentTarget, e.nativeEvent, onBoardClick)}
-      ref={canvasRef}
-      width={25 * 16}
-      height={25 * 16}
-      style={{
-        width: "1000px",
-        height: "1000px",
-        imageRendering: "pixelated",
-      }}
-    >
-    </canvas>
+    <div>
+      <canvas
+        onClick={(e) =>
+          handleClickOnCanvas(e.currentTarget, e.nativeEvent, onBoardClick)}
+        ref={canvasRef}
+        width={25 * 16}
+        height={25 * 16}
+        style={{
+          width: "1000px",
+          height: "1000px",
+          imageRendering: "pixelated",
+        }}
+      >
+      </canvas>
+    </div>
   );
 }
 
