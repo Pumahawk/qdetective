@@ -4,6 +4,7 @@ import { getGlobalServerAddress, startGame } from "../services/AppService.ts";
 import { GameSetupRootComponent } from "./GameSetupRootComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
 import { getUrlParameters, redirectUrl } from "../core/utils.ts";
+import { GameRootComponent } from "./GameRootComponent.tsx";
 
 type ViewState =
   | ServerSetupState
@@ -99,7 +100,7 @@ export function AppRootComponent() {
         </div>
       )}
 
-      {view.mode === "play" && <div>Starting game...</div>}
+      {view.mode === "play" && <GameRootComponent gameId={view.gameId} />}
     </div>
   );
 }
