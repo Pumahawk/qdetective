@@ -181,13 +181,8 @@ export function GameSetupRootComponent(
           playerAssetId: e.playerAssetId,
           playerName: e.playerName,
         }).then((response) => {
-          setView({
-            state: "game-info",
-            mode: "admin",
-            id: response.id,
-            gameStatus: response.data.status,
-            name: response.data.name,
-            players: response.data.players,
+          redirectUrl({
+            gameId: response.id,
           });
         });
         break;
@@ -198,13 +193,8 @@ export function GameSetupRootComponent(
           playerAsset: e.playerAssetId,
           playerName: e.playerName,
         }).then((response) => {
-          setView({
-            state: "game-info",
-            mode: "not-admin",
-            id: response.id,
-            gameStatus: response.data.status,
-            name: response.data.name,
-            players: response.data.players,
+          redirectUrl({
+            gameId: response.id,
           });
         });
         break;
