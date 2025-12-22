@@ -3,7 +3,7 @@ import { Loading } from "../core/core.tsx";
 import { getGlobalServerAddress, startGame } from "../services/AppService.ts";
 import { GameSetupRootComponent } from "./GameSetupRootComponent.tsx";
 import { ServerSetupComponent } from "./ServerSetupComponent.tsx";
-import { getGameIdFromUrl, redirectUrl } from "../core/utils.ts";
+import { getUrlParameters, redirectUrl } from "../core/utils.ts";
 
 type ViewState =
   | ServerSetupState
@@ -35,12 +35,19 @@ export function AppRootComponent() {
 
   useEffect(() => {
     const address = getGlobalServerAddress();
-    const gameId = getGameIdFromUrl();
+    const { mode, gameId } = getUrlParameters();
     if (address) {
-      setView({
-        mode: "game-setup",
-        gameId: gameId ?? undefined,
-      });
+      if (gameId && mode === "play") {
+        setView({
+          mode: "play",
+          gameId: gameId,
+        });
+      } else {
+        setView({
+          mode: "game-setup",
+          gameId: gameId ?? undefined,
+        });
+      }
     } else {
       setView({
         mode: "server-setup",
@@ -49,9 +56,9 @@ export function AppRootComponent() {
   }, []);
 
   function handleOpenGame(gameId: string) {
-    setView({
-      mode: "play",
+    redirectUrl({
       gameId,
+      mode: "play",
     });
   }
 

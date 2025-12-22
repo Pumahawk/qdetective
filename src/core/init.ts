@@ -1,7 +1,7 @@
 import { setGlobalServerAddress } from "../services/AppService.ts";
-import { getAddressFromUrl } from "./utils.ts";
+import { getUrlParameters } from "./utils.ts";
 
 export function init() {
-  const address = getAddressFromUrl();
+  const address = getUrlParameters().address;
   if (address) setGlobalServerAddress(address);
 }

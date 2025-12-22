@@ -1,16 +1,21 @@
-export function getAddressFromUrl(): string | null {
-  const url = new URL(globalThis.window.location.href);
-  return url.searchParams.get("address");
+type ModeType = "play" | null;
+
+export interface UrlParameters {
+  address?: string | null;
+  gameId?: string | null;
+  mode?: ModeType;
 }
 
-export function getGameIdFromUrl(): string | null {
+export function getUrlParameters(): UrlParameters {
   const url = new URL(globalThis.window.location.href);
-  return url.searchParams.get("gameId");
+  return {
+    gameId: url.searchParams.get("gameId"),
+    address: url.searchParams.get("address"),
+    mode: url.searchParams.get("mode") as ModeType,
+  };
 }
 
-export function redirectUrl(
-  params: { address?: string | null; gameId?: string | null },
-) {
+export function redirectUrl(params: UrlParameters) {
   const url = new URL(globalThis.window.location.href);
 
   Object.entries(params).forEach(([param, value]) => {
