@@ -18,6 +18,7 @@ import {
   GameSetupComponent,
   type OnConfirmEvent,
 } from "./GameSetupComponent.tsx";
+import { redirectUrl } from "../core/utils.ts";
 
 type ViewState =
   | LoadingState
@@ -67,12 +68,13 @@ interface GameInfo {
 }
 
 export interface GameSetupRootProps {
+  gameId?: string;
   onStartGame?: (gameId: string) => void;
   onOpenGame?: (gameId: string) => void;
 }
 
 export function GameSetupRootComponent(
-  { onOpenGame, onStartGame }: GameSetupRootProps,
+  { gameId: initialGameId, onOpenGame, onStartGame }: GameSetupRootProps,
 ) {
   const [view, setView] = useState<ViewState>({ state: "loading" });
   const [loading, setLoading] = useState(true);
@@ -80,14 +82,18 @@ export function GameSetupRootComponent(
   const gameId = view?.state === "game-info" && view.id;
 
   useEffect(() => {
-    getGamesFromServer().then((result) => {
-      setView({
-        state: "game-list",
-        games: result.status?.map((s) => ({ id: s.id, name: s.id })) ?? [],
+    if (initialGameId) {
+      openGameAction(initialGameId);
+    } else {
+      getGamesFromServer().then((result) => {
+        setView({
+          state: "game-list",
+          games: result.status?.map((s) => ({ id: s.id, name: s.id })) ?? [],
+        });
+      }).finally(() => {
+        setLoading(false);
       });
-    }).finally(() => {
-      setLoading(false);
-    });
+    }
   }, []);
 
   useEffect(() => {
@@ -125,7 +131,7 @@ export function GameSetupRootComponent(
     });
   }
 
-  function handleOnOpenGame(gameId: string) {
+  function openGameAction(gameId: string) {
     console.log("Handle handleOnOpenGame");
     setLoading(true);
     const storeInfo = getStoreGamePlayerInfo(gameId);
@@ -146,6 +152,12 @@ export function GameSetupRootComponent(
       });
     }).finally(() => {
       setLoading(false);
+    });
+  }
+
+  function handleOpenGame(gameId: string) {
+    redirectUrl({
+      gameId,
     });
   }
 
@@ -211,7 +223,7 @@ export function GameSetupRootComponent(
               <GameListComponent
                 games={view.games}
                 onNewGameAction={() => handleOnNewGameAction()}
-                onOpenGame={(gameId) => handleOnOpenGame(gameId)}
+                onOpenGame={(gameId) => handleOpenGame(gameId)}
               />
             )}
 

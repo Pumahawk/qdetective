@@ -17,6 +17,7 @@ interface ServerSetupState {
 
 interface GameSetupViewState {
   mode: "game-setup";
+  gameId?: string;
 }
 
 interface PlayGameViewState {
@@ -36,16 +37,10 @@ export function AppRootComponent() {
     const address = getGlobalServerAddress();
     const gameId = getGameIdFromUrl();
     if (address) {
-      if (gameId) {
-        setView({
-          mode: "play",
-          gameId: gameId,
-        });
-      } else {
-        setView({
-          mode: "game-setup",
-        });
-      }
+      setView({
+        mode: "game-setup",
+        gameId: gameId ?? undefined,
+      });
     } else {
       setView({
         mode: "server-setup",
@@ -54,7 +49,10 @@ export function AppRootComponent() {
   }, []);
 
   function handleOpenGame(gameId: string) {
-    redirectUrl({ gameId });
+    setView({
+      mode: "play",
+      gameId,
+    });
   }
 
   function handleStartGame(gameId: string) {
@@ -87,6 +85,7 @@ export function AppRootComponent() {
       {view.mode === "game-setup" && (
         <div hidden={loading}>
           <GameSetupRootComponent
+            gameId={view.gameId}
             onOpenGame={(gameId) => handleOpenGame(gameId)}
             onStartGame={(gameId) => handleStartGame(gameId)}
           />
