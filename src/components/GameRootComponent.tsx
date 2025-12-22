@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
 import { type BoardModel } from "../core/board-core.ts";
 import type { StateGameDto } from "../core/dto.ts";
-import { rollDice, watchGame } from "../services/AppService.ts";
+import { useGameState } from "../hooks/game.ts";
+import { rollDiceFase } from "../services/AppService.ts";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
 
@@ -10,30 +10,22 @@ export interface GameRootProps {
   gameId: string;
 }
 export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
-  const [state, setState] = useState<StateGameDto | null>(null);
+  const state = useGameState(gameId);
 
-  const boardModel = useMemo<BoardModel | undefined>(() => {
-    return state && state.state === "running"
-      ? {
-        players: state.players.map((p) => ({
-          id: p.id,
-          asset: p.assetId,
-          position: p.position,
-        })),
-        highlight: [],
-        selection: [],
-      }
-      : undefined;
-  }, [state]);
+  const boardModel = getBoardModel(state);
 
-  useEffect(() => {
-    const res = watchGame(gameId, (message) => {
-      if (message.type === "status-update" || message.type === "status-info") {
-        setState(message.message);
-      }
-    });
-    return () => res.controller.abort();
-  }, []);
+  function handleRollDice() {
+    rollDiceFase(gameId);
+  }
+
+  function handleClickOnBoard(x: numebr, y: number) {
+    if (
+      state?.state === "running" && state.round.state === "move" &&
+      state.round.playerId === myId
+    ) {
+      movePlayerIfPossible(gameId, myId);
+    }
+  }
 
   return (
     <div>
@@ -45,12 +37,12 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                 {state.round.state === "dice" &&
                   state.round.playerId === myId && (
                   <DiceRollComponent
-                    onRoll={() => rollDice(gameId)}
+                    onRoll={handleRollDice}
                   />
                 )}
                 <BoardComponent
                   model={boardModel}
-                  onBoardClick={(x, y) => console.log("click on board", x, y)}
+                  onBoardClick={handleClickOnBoard}
                 />
               </div>
             )
@@ -59,4 +51,24 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
         : <div>Loading...</div>}
     </div>
   );
+}
+
+function getBoardModel(state?: StateGameDto): BoardModel | undefined {
+  if (state && state.state === "running") {
+    const round = state.round;
+    return {
+      players: state.players.map((p) => ({
+        id: p.id,
+        asset: p.assetId,
+        position: p.position,
+      })),
+      highlight: round.state === "move"
+        ? round.highlight.map((c) => ({ position: c }))
+        : [],
+      selection: round.state === "move"
+        ? round.selection.map((c) => ({ position: c }))
+        : [],
+    };
+  }
+  return undefined;
 }

@@ -169,35 +169,39 @@ export async function startGame(
 }
 
 export function getGamesFromServer(): Promise<AllStateResponseDto> {
-  return StateServerClient.get<AllStateResponseDto>("status");
+  return client.getAllStates();
 }
 
-const StateServerClient = {
-  async get<T>(path: string, conf?: {
-    signal?: AbortSignal;
-  }): Promise<T> {
-    const response = await fetch(getAddressOrThrow() + "/" + path, {
-      signal: conf?.signal,
-    });
-    return response.json() as T;
+const client = {
+  async getState(gameId: string): Promise<StateGameDto> {
+    const response = await fetch(getAddressOrThrow() + "/status/" + gameId);
+    const state = await response.json() as GetStatusResponseDto;
+    return state.data;
   },
 
-  async post<RS>(path: string, body?: unknown, conf?: {
-    signal?: AbortSignal;
-  }): Promise<RS> {
-    const response = await fetch(getAddressOrThrow() + "/" + path, {
+  async saveState(gameId: string, state: StateGameDto): Promise<void> {
+    await fetch(getAddressOrThrow() + "/status/" + gameId, {
       method: "POST",
-      signal: conf?.signal,
-      body: body as string && JSON.stringify({ data: body }),
+      body: JSON.stringify({ data: state }),
     });
-    return response.json() as RS;
+    return;
   },
 
-  async watch<T>(path: string, callBack: (message: T) => void, conf?: {
-    signal?: AbortSignal;
-  }): Promise<void> {
-    const result = await fetch(getAddressOrThrow() + "/" + path, {
-      signal: conf?.signal,
+  async getAllStates(): Promise<AllStateResponseDto> {
+    const response = await fetch(getAddressOrThrow() + "/status");
+    const body = await response.json() as AllStateResponseDto;
+    return body;
+  },
+
+  async watchGame(
+    gameId: string,
+    conf: {
+      signal: AbortSignal;
+    },
+    callBack: (message: MessageDto) => void,
+  ): Promise<void> {
+    const result = await fetch(getAddressOrThrow() + "/status/" + gameId, {
+      signal: conf.signal,
     });
     if (result.status == 200) {
       const reader = result.body!.getReader();
@@ -209,7 +213,7 @@ const StateServerClient = {
         const messages = lines.split("\n").filter((m) => !!m);
         messages.forEach((message) => {
           console.log("messsage: ", message);
-          const mj = JSON.parse(message) as T;
+          const mj = JSON.parse(message) as MessageDto;
           callBack(mj);
         });
       }
@@ -248,17 +252,16 @@ export function watchGame(
   callBack: (message: MessageDto) => void,
 ): { promise: Promise<void>; controller: AbortController } {
   const abortController = new AbortController();
-  const result = StateServerClient.watch<MessageDto>(
-    "status/" + id + "/messages",
-    callBack,
-  );
+  const result = client.watchGame(id, {
+    signal: abortController.signal,
+  }, callBack);
   return {
     promise: result,
     controller: abortController,
   };
 }
 
-export async function rollDice(gameId: string): Promise<void> {
+export async function rollDiceFase(gameId: string): Promise<void> {
   const game = (await getGame(gameId)).data;
 
   if (game.state === "running" && game.round.state === "dice") {
@@ -273,10 +276,13 @@ export async function rollDice(gameId: string): Promise<void> {
         selection: [],
       },
     };
-    StateServerClient.post("status/" + gameId, body);
+    client.saveState(gameId, body);
   } else {
     throw new Error("Invalid game state");
   }
+}
+
+export async function movePlayerIfPossible(gameId: string, playerId: string) {
 }
 
 function randomDice(): DiceValue {
