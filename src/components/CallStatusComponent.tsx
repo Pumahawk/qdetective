@@ -3,13 +3,16 @@ import { ItemImg, PlayerImg } from "../core/core.tsx";
 
 export type PlayerStatus = "waiting" | "owner" | "not-owner";
 
+export interface PlayerCallInfo {
+  assetId: number;
+  name: string;
+  status: PlayerStatus;
+}
+
 export interface CallStatusProps {
   status: "wait" | "ready";
-  itemId: number | undefined;
-  players: {
-    id: number;
-    status: PlayerStatus;
-  }[];
+  itemId?: number;
+  players: PlayerCallInfo[];
 
   onContinue?: () => void;
 }
@@ -17,24 +20,18 @@ export interface CallStatusProps {
 export function CallStatusComponent(
   { status, itemId, players, onContinue }: CallStatusProps,
 ) {
-  const playersInfo = players.map((p) => ({
-    status: p.status,
-    ...getCardById(p.id),
-  }));
-
   const itemInfo = itemId && getCardById(itemId);
 
   return (
     <div>
       <div>
-        {playersInfo.map((info) => (
-          <div key={info.id}>
+        {players.map((info, i) => (
+          <div key={i}>
             <PlayerImg imageId={info.assetId} />
             <PlayerStatus status={info.status} />
             <div>{info.name}</div>
           </div>
         ))}
-        <div></div>
       </div>
       {itemInfo && (
         <div>

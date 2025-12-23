@@ -1,6 +1,6 @@
 import { type BoardModel } from "../core/board-core.ts";
 import { PlayerImg } from "../core/core.tsx";
-import type { StateGameDto, Targets } from "../core/dto.ts";
+import type { StateGameDto } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
 import {
   callItems,
@@ -12,6 +12,14 @@ import { ItemSelectionComponent } from "./ItemSelectionComponent.tsx";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
 import { getAllCards, getCardById } from "../core/cards.ts";
+import {
+  CallStatusComponent,
+  type PlayerCallInfo,
+} from "./CallStatusComponent.tsx";
+import type {
+  PlayingPlayerDto,
+  ResponseFaseCallRoundState,
+} from "../core/game-dto.ts";
 
 export interface GameRootProps {
   playerId: string;
@@ -45,6 +53,10 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
   function handleOnCallConfirm(items: number[]) {
     callItems(gameId, [items[0], items[1], items[2]]);
+  }
+
+  function handleOnShowCard(item: number) {
+    console.log("Card selected", item);
   }
 
   return (
@@ -105,6 +117,32 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                       )}
                     </div>
                   )}
+
+                  {state.round.state === "call" &&
+                    state.round.callState === "response-fase" &&
+                    state.round.callPlayerId === myId && (
+                    <div>
+                      <ItemSelectionComponent
+                        itemGroups={[getCommonItemGroups(
+                          state.round.items,
+                          state.players.find((p) => p.id === myId)!.deckIds,
+                        )]}
+                        onConfirm={(group) => handleOnShowCard(group[0])}
+                      />
+                    </div>
+                  )}
+
+                  {state.round.state === "call" &&
+                    state.round.callState === "response-fase" &&
+                    (
+                      <CallStatusComponent
+                        players={getCallStatePlayersFromGame(
+                          state.players,
+                          state.round,
+                        )}
+                        status="wait"
+                      />
+                    )}
                 </div>
 
                 <BoardComponent
@@ -148,7 +186,7 @@ function groupItems(
   return groups;
 }
 
-function getMyItemGroups(items: number[]): number[][] {
+function getItemGroups(items: number[]): number[][] {
   const groups: number[][] = [[], [], []];
   items.map(getCardById).forEach((card) => groupItems(card, groups));
   return groups;
@@ -158,4 +196,36 @@ function getAllItemGroups(): number[][] {
   const groups: number[][] = [[], [], []];
   getAllCards().forEach((c) => groupItems(c, groups));
   return groups;
+}
+
+function getCommonItemGroups(a: number[], b: number[]): number[] {
+  return a.filter((v) => b.includes(v));
+}
+
+function getCallStatePlayersFromGame(
+  players: PlayingPlayerDto[],
+  round: ResponseFaseCallRoundState,
+): PlayerCallInfo[] {
+  const roundPlayerIndex = players.findIndex((p) => p.id === round.playerId)!;
+  const callPlayerIndex =
+    players.findIndex((p) => p.id === round.callPlayerId)! - 1;
+  const playersRelative = [];
+
+  for (
+    let i = roundPlayerIndex + 1;
+    i < roundPlayerIndex + players.length;
+    i++
+  ) {
+    playersRelative.push(players[i % players.length]);
+  }
+
+  return playersRelative.map((p, i) => ({
+    name: p.name,
+    assetId: p.assetId,
+    status: i < callPlayerIndex
+      ? "not-owner"
+      : i == callPlayerIndex
+      ? "waiting"
+      : "waiting",
+  }));
 }
