@@ -182,7 +182,7 @@ const client = {
     gameId?: string,
   ): Promise<GetStatusResponseDto> {
     const response = await fetch(
-      getAddressOrThrow() + "/status" + gameId ? ("/" + gameId) : "",
+      getAddressOrThrow() + "/status" + (gameId ? ("/" + gameId) : ""),
       {
         method: "POST",
         body: JSON.stringify({ data: state }),
@@ -204,9 +204,12 @@ const client = {
     },
     callBack: (message: MessageDto) => void,
   ): Promise<void> {
-    const result = await fetch(getAddressOrThrow() + "/status/" + gameId, {
-      signal: conf.signal,
-    });
+    const result = await fetch(
+      getAddressOrThrow() + "/status/" + gameId + "/messages",
+      {
+        signal: conf.signal,
+      },
+    );
     if (result.status == 200) {
       const reader = result.body!.getReader();
       const decoder = new TextDecoder();
@@ -270,13 +273,20 @@ export async function rollDiceFase(gameId: string): Promise<void> {
 
   if (game.state === "running" && game.round.state === "dice") {
     const dice = randomDice();
+    const player = game.players.find((p) => p.id === game.round.playerId)!;
+    const highlight = getHighlightBlocksPlayer(
+      player,
+      player.position[0],
+      player.position[1],
+    );
     const body: RunningStateGameDto = {
       ...game,
       round: {
         ...game.round,
         state: "move",
         step: dice.total,
-        highlight: [],
+        dice: dice.dices,
+        highlight,
         selection: [],
       },
     };
@@ -294,6 +304,7 @@ export async function movePlayerIfPossible(
   const game = await getGame(gameId);
   if (game.data.state === "running" && game.data.round.state === "move") {
     if (game.data.round.step <= 0) {
+      console.error("step <= 0");
       return;
     }
 
@@ -301,20 +312,26 @@ export async function movePlayerIfPossible(
     const player = game.data.players.find((p) => p.id === playerId)!;
 
     if (!isValidMovementBlock(x, y)) {
+      console.error("!isValidMovementBlock");
       return;
     }
 
     if (
       Math.abs(player.position[0] - x) + Math.abs(player.position[1] - y) !== 1
     ) {
+      console.error("invalid movement");
       return;
     }
 
     player.position = [x, y];
-    game.data.round.highlight = getRoundBlock(x, y).filter((b) =>
-      b.type === "x" || b.type == "S"
-    ).map((b) => [b.x, b.y]);
-    client.saveState(game.data);
+    game.data.round.step--;
+    game.data.round.highlight = game.data.round.step > 0
+      ? getHighlightBlocksPlayer(player, x, y)
+      : [];
+
+    game.data.round.selection = [...game.data.round.selection, [x, y]];
+
+    client.saveState(game.data, gameId);
   } else {
     console.error("Invalid game state");
   }
@@ -327,4 +344,14 @@ function randomDice(): DiceValue {
     dices: [dice1, dice2],
     total: dice1 + dice2,
   };
+}
+
+function getHighlightBlocksPlayer(
+  player: { position: [number, number] },
+  x: number,
+  y: number,
+): [number, number][] {
+  return getRoundBlock(x, y).filter((b) =>
+    Math.abs(player.position[0] - b.x + player.position[1] - b.y) === 1
+  ).filter((b) => b.type === "x" || b.type == "S").map((b) => [b.x, b.y]);
 }

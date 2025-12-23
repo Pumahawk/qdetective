@@ -47,13 +47,13 @@ export function isValidMovementBlock(x: number, y: number): boolean {
 
 export function getRoundBlock(x: number, y: number): Block[] {
   const map = getMap();
-  return Array(9).map((_, i) => [i % 3 - 1 + y, Math.floor(i / 3) - 1 + x])
+  return [...Array(9)].map((_, i) => [i % 3 - 1 + x, Math.floor(i / 3) - 1 + y])
     .filter(
       (c) =>
         c[0] >= 0 && c[0] < map[0].length && c[1] >= 0 && c[1] < map.length,
     ).map((c) => ({
       type: map[c[1]][c[0]],
-      x: c[1],
-      y: c[0],
+      x: c[0],
+      y: c[1],
     }));
 }

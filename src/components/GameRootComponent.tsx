@@ -14,6 +14,8 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
   const boardModel = getBoardModel(state);
 
+  console.log("state: ", state);
+
   function handleRollDice() {
     rollDiceFase(gameId);
   }
@@ -34,9 +36,13 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
           state.state === "running"
             ? (
               <div>
-                {state.round.state === "dice" &&
+                {(state.round.state === "dice" ||
+                  state.round.state === "move") &&
                   state.round.playerId === myId && (
                   <DiceRollComponent
+                    dice={state.round.state === "move"
+                      ? state.round.dice
+                      : undefined}
                     onRoll={handleRollDice}
                   />
                 )}

@@ -26,6 +26,7 @@ export interface DiceRoundState extends RoundBase<"dice"> {
 }
 
 export interface MoveRoundState extends RoundBase<"move"> {
+  dice: [number, number];
   step: number;
   selection: [number, number][];
   highlight: [number, number][];
