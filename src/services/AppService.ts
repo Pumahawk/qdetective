@@ -3,13 +3,13 @@ import { getPlayerInitialPosition } from "../core/characters.ts";
 import type {
   AllStateResponseDto,
   GetStatusResponseDto,
-  MessageDto,
   NewStatusResponseDTO,
   StateGameDto,
   Targets,
 } from "../core/dto.ts";
 import { type RunningStateGameDto } from "../core/game-dto.ts";
 import { getRoundBlock, isValidMovementBlock } from "../core/map.ts";
+import type { MessageDto } from "../core/messages-dto.ts";
 
 interface DiceValue {
   total: number;
@@ -208,6 +208,16 @@ const client = {
       throw new Error("unable stream messages");
     }
   },
+
+  async message(gameId: string, message: MessageDto) {
+    await fetch(
+      getAddressOrThrow() + "/status/" + gameId + "/message",
+      {
+        method: "POST",
+        body: JSON.stringify(message),
+      },
+    );
+  },
 };
 
 export function setStoreGamePlayerInfo(
@@ -372,5 +382,17 @@ export async function callItems(gameId: string, items: Targets) {
     client.saveOrCreateState(game.data, gameId);
   } else {
     throw new Error("Invalid game fase");
+  }
+}
+
+export async function showItemToCaller(gameId: string, item?: number) {
+  const game = await client.getState(gameId);
+  if (game.data.state === "running" && game.data.round.state === "call") {
+    client.message(gameId, {
+      type: "show-item",
+      item: item,
+    });
+  } else {
+    throw new Error("Invalid status message");
   }
 }

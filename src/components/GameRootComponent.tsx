@@ -6,6 +6,7 @@ import {
   callItems,
   movePlayerIfPossible,
   rollDiceFase,
+  showItemToCaller,
   startCallFase,
 } from "../services/AppService.ts";
 import { ItemSelectionComponent } from "./ItemSelectionComponent.tsx";
@@ -55,8 +56,8 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
     callItems(gameId, [items[0], items[1], items[2]]);
   }
 
-  function handleOnShowCard(item: number) {
-    console.log("Card selected", item);
+  function handleOnShowCard(item?: number) {
+    showItemToCaller(gameId, item);
   }
 
   return (

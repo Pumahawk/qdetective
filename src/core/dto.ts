@@ -41,10 +41,3 @@ export interface GetStatusResponseDto {
   id: string;
   data: StateGameDto;
 }
-
-export type MessageDto = StatusMessageDto;
-
-export interface StatusMessageDto {
-  type: "status-update" | "status-info";
-  message: StateGameDto;
-}
