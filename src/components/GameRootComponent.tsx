@@ -1,8 +1,9 @@
 import { type BoardModel } from "../core/board-core.ts";
 import { PlayerImg } from "../core/core.tsx";
-import type { StateGameDto } from "../core/dto.ts";
+import type { StateGameDto, Targets } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
 import {
+  callItems,
   movePlayerIfPossible,
   rollDiceFase,
   startCallFase,
@@ -43,6 +44,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
   }
 
   function handleOnCallConfirm(items: number[]) {
+    callItems(gameId, [items[0], items[1], items[2]]);
   }
 
   return (

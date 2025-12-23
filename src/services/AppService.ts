@@ -6,6 +6,7 @@ import type {
   MessageDto,
   NewStatusResponseDTO,
   StateGameDto,
+  Targets,
 } from "../core/dto.ts";
 import { type RunningStateGameDto } from "../core/game-dto.ts";
 import { getRoundBlock, isValidMovementBlock } from "../core/map.ts";
@@ -346,5 +347,30 @@ export async function startCallFase(gameId: string): Promise<void> {
     client.saveOrCreateState(game.data, gameId);
   } else {
     throw new Error("Invalid game state");
+  }
+}
+
+export async function callItems(gameId: string, items: Targets) {
+  const game = await client.getState(gameId);
+  if (
+    game.data.state === "running" && game.data.round.state === "call" &&
+    game.data.round.callState === "ask-fase"
+  ) {
+    const roundPlayerId = game.data.round.playerId;
+    const callPlayerKey = (game.data.players.findIndex((p) =>
+      p.id === roundPlayerId
+    )! + 1) % game.data.players.length;
+    const callPlayerId = game.data.players[callPlayerKey].id;
+
+    game.data.round = {
+      state: "call",
+      playerId: game.data.round.playerId,
+      callState: "response-fase",
+      items,
+      callPlayerId,
+    };
+    client.saveOrCreateState(game.data, gameId);
+  } else {
+    throw new Error("Invalid game fase");
   }
 }
