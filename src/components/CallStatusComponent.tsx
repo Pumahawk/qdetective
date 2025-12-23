@@ -1,13 +1,13 @@
+import { getCardById } from "../core/cards.ts";
 import { ItemImg, PlayerImg } from "../core/core.tsx";
-import { getItemById, getPlayerById } from "../services/AppService.ts";
 
 export type PlayerStatus = "waiting" | "owner" | "not-owner";
 
 export interface CallStatusProps {
   status: "wait" | "ready";
-  itemId: string | undefined;
+  itemId: number | undefined;
   players: {
-    id: string;
+    id: number;
     status: PlayerStatus;
   }[];
 
@@ -19,10 +19,10 @@ export function CallStatusComponent(
 ) {
   const playersInfo = players.map((p) => ({
     status: p.status,
-    ...getPlayerById(p.id),
+    ...getCardById(p.id),
   }));
 
-  const itemInfo = itemId && getItemById(itemId);
+  const itemInfo = itemId && getCardById(itemId);
 
   return (
     <div>

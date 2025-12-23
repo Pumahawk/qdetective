@@ -1,30 +1,30 @@
 import { useState } from "react";
-import { getItemById, getPlayerById } from "../services/AppService.ts";
 import { ItemImg, PlayerImg } from "../core/core.tsx";
+import { getCardById } from "../core/cards.ts";
 
 export interface GameResultProps {
-  items: [string, string, string];
+  items: [number, number, number];
   players: {
-    id: string;
+    assetId: number;
     status: number;
-    items: string[];
+    items: number[];
   }[];
 }
 
 export function GameResultComponent({ items, players }: GameResultProps) {
-  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
   const playersInfo = players.map((player) => ({
-    info: getPlayerById(player.id),
+    info: getCardById(player.assetId),
     ...player,
   }));
 
-  const itemsInfo = items.map((itemId) => getItemById(itemId));
+  const itemsInfo = items.map((itemId) => getCardById(itemId));
   const selectedPlayerMeta = selectedPlayer &&
-    playersInfo.find((player) => player.id === selectedPlayer);
+    playersInfo.find((player) => player.assetId === selectedPlayer);
   const selectedPlayerInfo = selectedPlayerMeta &&
-    getPlayerById(selectedPlayerMeta.id);
+    getCardById(selectedPlayerMeta.assetId);
   const selectedPlayerItems = selectedPlayerInfo &&
-    selectedPlayerMeta.items.map((itemId) => getItemById(itemId));
+    selectedPlayerMeta.items.map((itemId) => getCardById(itemId));
 
   return (
     <div>
