@@ -1,9 +1,9 @@
-import { getItemById } from "../services/AppService.ts";
+import { getCardById } from "../core/cards.ts";
 
 export interface ItemSelectionProps {
-  itemGroups: string[][];
+  itemGroups: number[][];
 
-  onConfirm?: (items: string[]) => void;
+  onConfirm?: (items: number[]) => void;
 }
 
 export function ItemSelectionComponent(
@@ -11,7 +11,7 @@ export function ItemSelectionComponent(
 ) {
   const itemGroupsInfo = itemGroups.map((
     itemsId,
-  ) => (itemsId.map((id) => getItemById(id))));
+  ) => (itemsId.map((id) => getCardById(id))));
 
   return (
     <form
@@ -35,11 +35,13 @@ export function ItemSelectionComponent(
   );
 }
 
-function retrieveSelectedItemsFromForm(form: HTMLFormElement): string[] {
+function retrieveSelectedItemsFromForm(form: HTMLFormElement): number[] {
   const data = new FormData(form);
-  const itemsIds: string[] = [];
+  const itemsIds: number[] = [];
   data.forEach((value, key) => {
-    if (key.startsWith("item_")) itemsIds.push(value.toString());
+    if (key.startsWith("item_")) {
+      itemsIds.push(Number.parseInt(value.toString()));
+    }
   });
   return itemsIds;
 }

@@ -81,6 +81,13 @@ export function getCardById(id: number): Card {
   };
 }
 
+export function getAllCards(): Card[] {
+  return cards.map((c, id) => ({
+    ...c,
+    id,
+  }));
+}
+
 function shuffle<T>(list: T[]): T[] {
   const res = [...list];
   for (let i = list.length - 1; i > 0; i--) {

@@ -1,9 +1,16 @@
 import { type BoardModel } from "../core/board-core.ts";
+import { PlayerImg } from "../core/core.tsx";
 import type { StateGameDto } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
-import { movePlayerIfPossible, rollDiceFase } from "../services/AppService.ts";
+import {
+  movePlayerIfPossible,
+  rollDiceFase,
+  startCallFase,
+} from "../services/AppService.ts";
+import { ItemSelectionComponent } from "./ItemSelectionComponent.tsx";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
+import { getAllCards, getCardById } from "../core/cards.ts";
 
 export interface GameRootProps {
   playerId: string;
@@ -14,7 +21,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
   const boardModel = getBoardModel(state);
 
-  console.log("state: ", state);
+  const me = state?.players.find((p) => p.id === myId);
 
   function handleRollDice() {
     if (state?.state == "running" && state.round.playerId === myId) {
@@ -31,8 +38,29 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
     }
   }
 
+  function handleStartCallFase() {
+    startCallFase(gameId);
+  }
+
+  function handleOnCallConfirm(items: number[]) {
+  }
+
   return (
     <div>
+      {me && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <PlayerImg imageId={me.assetId} />
+          </div>
+        </div>
+      )}
+
       {state
         ? (
           state.state === "running"
@@ -48,6 +76,35 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                     onRoll={handleRollDice}
                   />
                 )}
+
+                <div>
+                  {state.round.playerId === myId && (
+                    <div>
+                      {state.round.state === "move" && state.round.step === 0 &&
+                        (
+                          <div>
+                            <button type="button" onClick={handleStartCallFase}>
+                              Call
+                            </button>
+                          </div>
+                        )}
+
+                      {state.round.state === "call" && (
+                        <div>
+                          {state.round.callState === "ask-fase" && (
+                            <div>
+                              <ItemSelectionComponent
+                                itemGroups={getAllItemGroups()}
+                                onConfirm={handleOnCallConfirm}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <BoardComponent
                   model={boardModel}
                   onBoardClick={handleClickOnBoard}
@@ -79,4 +136,24 @@ function getBoardModel(state?: StateGameDto): BoardModel | undefined {
     };
   }
   return undefined;
+}
+
+function groupItems(
+  card: { type: "item" | "room" | "person"; id: number },
+  groups: number[][],
+): number[][] {
+  groups[card.type === "item" ? 0 : card.type === "room" ? 1 : 2].push(card.id);
+  return groups;
+}
+
+function getMyItemGroups(items: number[]): number[][] {
+  const groups: number[][] = [[], [], []];
+  items.map(getCardById).forEach((card) => groupItems(card, groups));
+  return groups;
+}
+
+function getAllItemGroups(): number[][] {
+  const groups: number[][] = [[], [], []];
+  getAllCards().forEach((c) => groupItems(c, groups));
+  return groups;
 }

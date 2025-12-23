@@ -45,27 +45,6 @@ function getAddressOrThrow(): string {
   }
 }
 
-export function getPlayerById(
-  id: string,
-): { id: string; assetId: number; name: string } {
-  // TODO
-  return {
-    id: id,
-    name: "Mock Name",
-    assetId: 0,
-  };
-}
-
-export function getItemById(
-  id: string,
-): { id: string; name: string; assetId: number } {
-  return {
-    id: id,
-    name: "Mock name item",
-    assetId: 0,
-  };
-}
-
 export async function joinGame(status: {
   gameId: string;
   playerAsset: number;
@@ -87,7 +66,7 @@ export async function joinGame(status: {
       }],
     };
 
-    const result = await client.saveState(
+    const result = await client.saveOrCreateState(
       bodyRequest,
       status.gameId,
     );
@@ -118,7 +97,7 @@ export async function createGame(status: {
     }],
   };
 
-  const result = await client.saveState(bodyRequest);
+  const result = await client.saveOrCreateState(bodyRequest);
 
   setStoreGamePlayerInfo(result.id, playerId);
 
@@ -157,7 +136,7 @@ export async function startGame(
       },
     };
 
-    return await client.saveState(
+    return await client.saveOrCreateState(
       game,
       gameId,
     );
@@ -177,7 +156,7 @@ const client = {
     return state;
   },
 
-  async saveState(
+  async saveOrCreateState(
     state: StateGameDto,
     gameId?: string,
   ): Promise<GetStatusResponseDto> {
@@ -290,7 +269,7 @@ export async function rollDiceFase(gameId: string): Promise<void> {
         selection: [],
       },
     };
-    client.saveState(body, gameId);
+    client.saveOrCreateState(body, gameId);
   } else {
     throw new Error("Invalid game state");
   }
@@ -331,7 +310,7 @@ export async function movePlayerIfPossible(
 
     game.data.round.selection = [...game.data.round.selection, [x, y]];
 
-    client.saveState(game.data, gameId);
+    client.saveOrCreateState(game.data, gameId);
   } else {
     console.error("Invalid game state");
   }
@@ -354,4 +333,18 @@ function getHighlightBlocksPlayer(
   return getRoundBlock(x, y).filter((b) =>
     Math.abs(player.position[0] - b.x + player.position[1] - b.y) === 1
   ).filter((b) => b.type === "x" || b.type == "S").map((b) => [b.x, b.y]);
+}
+
+export async function startCallFase(gameId: string): Promise<void> {
+  const game = await getGame(gameId);
+  if (game.data.state === "running" && game.data.round.state === "move") {
+    game.data.round = {
+      state: "call",
+      playerId: game.data.round.playerId,
+      callState: "ask-fase",
+    };
+    client.saveOrCreateState(game.data, gameId);
+  } else {
+    throw new Error("Invalid game state");
+  }
 }
