@@ -1,12 +1,14 @@
 import { DiceImg } from "../core/core.tsx";
 
 export interface DiceRollProp {
+  actions: boolean;
   dice?: [number, number];
   onRoll?: () => void;
-  onContinue?: () => void;
 }
 
-export function DiceRollComponent({ dice, onRoll, onContinue }: DiceRollProp) {
+export function DiceRollComponent(
+  { actions, dice, onRoll }: DiceRollProp,
+) {
   return (
     <div>
       {dice != undefined && (
@@ -33,15 +35,16 @@ export function DiceRollComponent({ dice, onRoll, onContinue }: DiceRollProp) {
           </div>
         </div>
       )}
-      <button
-        type="button"
-        onClick={() =>
-          dice == undefined
-            ? (onRoll && onRoll())
-            : (onContinue && onContinue())}
-      >
-        {dice == undefined ? "Roll" : "Continue"}
-      </button>
+      {actions && dice === undefined &&
+        (
+          <button
+            hidden={!actions}
+            type="button"
+            onClick={() => onRoll && onRoll()}
+          >
+            Roll
+          </button>
+        )}
     </div>
   );
 }

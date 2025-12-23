@@ -17,7 +17,9 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
   console.log("state: ", state);
 
   function handleRollDice() {
-    rollDiceFase(gameId);
+    if (state?.state == "running" && state.round.playerId === myId) {
+      rollDiceFase(gameId);
+    }
   }
 
   function handleClickOnBoard(x: number, y: number) {
@@ -37,9 +39,9 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
             ? (
               <div>
                 {(state.round.state === "dice" ||
-                  state.round.state === "move") &&
-                  state.round.playerId === myId && (
+                  state.round.state === "move") && (
                   <DiceRollComponent
+                    actions={state.round.playerId === myId}
                     dice={state.round.state === "move"
                       ? state.round.dice
                       : undefined}
