@@ -95,9 +95,8 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
             assetId: ownerPlayer.assetId,
           },
         });
-      } else {
-        nextCallPlayerOrEndRound(gameId);
       }
+      nextCallPlayerOrEndRound(gameId);
     }
   }
 

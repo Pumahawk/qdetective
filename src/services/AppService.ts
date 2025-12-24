@@ -408,6 +408,32 @@ export async function showItemToCaller(
   }
 }
 
-export function nextCallPlayerOrEndRound(gameId: string) {
-  console.error("nextCallPlayerOrEndRound to implement", gameId);
+export async function nextCallPlayerOrEndRound(gameId: string) {
+  const game = await client.getState(gameId);
+  if (
+    game.data.state === "running" && game.data.round.state === "call" &&
+    game.data.round.callState === "response-fase"
+  ) {
+    const gameRound = game.data.round;
+    const roundPlayerIndex = game.data.players.findIndex((p) =>
+      p.id === gameRound.playerId
+    )!;
+    const nextCallPlayerIndex = (game.data.players.findIndex((p) =>
+      p.id === gameRound.callPlayerId
+    )! + 1) % game.data.players.length;
+
+    if (roundPlayerIndex === nextCallPlayerIndex) {
+      game.data.round = {
+        playerId:
+          game.data.players[(roundPlayerIndex + 1) % game.data.players.length]
+            .id,
+        state: "dice",
+      };
+    } else {
+      game.data.round.callPlayerId = game.data.players[nextCallPlayerIndex].id;
+    }
+    client.saveOrCreateState(game.data, gameId);
+  } else {
+    throw new Error("Invalid game state");
+  }
 }

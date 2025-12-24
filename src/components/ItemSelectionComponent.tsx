@@ -23,7 +23,7 @@ export function ItemSelectionComponent(
     >
       {itemGroupsInfo.map((group, i) => (
         <div key={i}>
-          <select name={"item_" + i} required>
+          <select name={"item_" + i}>
             {group.map((item) => (
               <option key={item.id} value={item.id}>{item.name}</option>
             ))}
