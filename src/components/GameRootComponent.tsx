@@ -5,6 +5,7 @@ import { useGameState } from "../hooks/game.ts";
 import {
   callItems,
   movePlayerIfPossible,
+  nextCallPlayerOrEndRound,
   rollDiceFase,
   showItemToCaller,
   startCallFase,
@@ -21,13 +22,16 @@ import type {
   PlayingPlayerDto,
   ResponseFaseCallRoundState,
 } from "../core/game-dto.ts";
+import type { MessageDto } from "../core/messages-dto.ts";
+import { useState } from "react";
 
 export interface GameRootProps {
   playerId: string;
   gameId: string;
 }
 export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
-  const state = useGameState(gameId);
+  const state = useGameState(gameId, handleMessage);
+  const [showItem, setShowItem] = useState<number>();
 
   const boardModel = getBoardModel(state);
 
@@ -58,6 +62,21 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
   function handleOnShowCard(item?: number) {
     showItemToCaller(gameId, item);
+  }
+
+  function handleMessage(message: MessageDto) {
+    console.log("handle message", message);
+    if (
+      message.type === "show-item" && state?.state === "running" &&
+      state.round.state === "call" &&
+      state.round.callState === "response-fase" && state.round.playerId === myId
+    ) {
+      if (message.message.item !== undefined) {
+        setShowItem(message.message.item);
+      } else {
+        nextCallPlayerOrEndRound(gameId);
+      }
+    }
   }
 
   return (
@@ -142,6 +161,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                           state.round,
                         )}
                         status="wait"
+                        onContinue={handleOnShowCard}
                       />
                     )}
                 </div>

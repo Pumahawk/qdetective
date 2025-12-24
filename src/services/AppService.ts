@@ -211,7 +211,7 @@ const client = {
 
   async message(gameId: string, message: MessageDto) {
     await fetch(
-      getAddressOrThrow() + "/status/" + gameId + "/message",
+      getAddressOrThrow() + "/status/" + gameId + "/messages",
       {
         method: "POST",
         body: JSON.stringify(message),
@@ -390,9 +390,15 @@ export async function showItemToCaller(gameId: string, item?: number) {
   if (game.data.state === "running" && game.data.round.state === "call") {
     client.message(gameId, {
       type: "show-item",
-      item: item,
+      message: {
+        item,
+      },
     });
   } else {
     throw new Error("Invalid status message");
   }
+}
+
+export function nextCallPlayerOrEndRound(gameId: string) {
+  console.error("nextCallPlayerOrEndRound to implement", gameId);
 }
