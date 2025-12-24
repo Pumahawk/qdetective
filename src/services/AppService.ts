@@ -368,7 +368,7 @@ export async function callItems(gameId: string, items: Targets) {
     game.data.state === "running" && game.data.round.state === "call" &&
     game.data.round.callState === "ask-fase"
   ) {
-    const callPlayerKey = getNextPlayer(game.data);
+    const callPlayerKey = getNextPlayer(game.data)!;
     const callPlayerId = callPlayerKey.id;
 
     game.data.round = {
@@ -414,7 +414,7 @@ export async function nextCallPlayerOrEndRound(gameId: string) {
     game.data.round.callState === "response-fase"
   ) {
     const gameRound = game.data.round;
-    const roundPlayerIndex = getNextPlayer(game.data).index;
+    const roundPlayerIndex = getNextPlayer(game.data)!.index;
     const nextCallPlayerIndex = (game.data.players.findIndex((p) =>
       p.id === gameRound.callPlayerId
     )! + 1) % game.data.players.length;
@@ -449,7 +449,7 @@ export async function moveStateToAccusationOpportunity(gameId: string) {
 export async function endRount(gameId: string) {
   const game = await client.getState(gameId);
   if (game.data.state === "running") {
-    const nextPlayer = getNextPlayer(game.data).id;
+    const nextPlayer = getNextPlayer(game.data)!.id;
     game.data.round = {
       state: "dice",
       playerId: nextPlayer,
@@ -503,11 +503,21 @@ export async function continueFromAccusationMade(gameId: string) {
       };
     } else {
       const round = game.data.round;
-      game.data.players.find((p) => p.id === round.playerId)!.status = "death";
-      game.data.round = {
-        state: "dice",
-        playerId: getNextPlayer(game.data).id,
-      };
+      const nextPlayer = getNextPlayer(game.data);
+      if (nextPlayer) {
+        game.data.players.find((p) => p.id === round.playerId)!.status =
+          "death";
+        game.data.round = {
+          state: "dice",
+          playerId: nextPlayer.id,
+        };
+      } else {
+        game.data = {
+          ...game.data,
+          state: "finished",
+          winer: undefined,
+        };
+      }
     }
     client.saveOrCreateState(game.data, gameId);
   } else {
@@ -517,9 +527,19 @@ export async function continueFromAccusationMade(gameId: string) {
 
 function getNextPlayer(
   game: RunningStateGameDto,
-): { index: number; id: string } {
-  const nextPlayerIndex =
-    (game.players.findIndex((p) => p.id === game.round.playerId)! + 1) %
-    game.players.length;
-  return { index: nextPlayerIndex, id: game.players[nextPlayerIndex].id };
+): { index: number; id: string } | undefined {
+  const players = game.players.map((p, i) => ({ player: p, index: i })).filter(
+    (p) => p.player.status === "live",
+  );
+  if (players.length < 2) {
+    return undefined;
+  }
+  const p = players[
+    (players.findIndex((p) => p.player.id === game.round.playerId)! + 1) %
+    players.length
+  ];
+  return {
+    index: p.index,
+    id: p.player.id,
+  };
 }
