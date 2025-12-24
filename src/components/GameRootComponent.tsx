@@ -4,6 +4,7 @@ import type { StateGameDto } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
 import {
   callItems,
+  continueFromAccusationMade,
   endRount,
   makeAccusation,
   movePlayerIfPossible,
@@ -93,6 +94,10 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
   function handleOnChoseItemAccusation(items: number[]) {
     makeAccusation(gameId, items);
+  }
+
+  function handleContinueFromAccusationMade() {
+    continueFromAccusationMade(gameId);
   }
 
   function handleMessage(game: StateGameDto, message: MessageDto) {
@@ -231,6 +236,15 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                         onContinue={handleOnShowCard}
                       />
                     )}
+
+                  {state.round.state === "accusation-made" && (
+                    <div>
+                      {state.round.result}
+                      <button onClick={handleContinueFromAccusationMade}>
+                        Continue
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <MyDeckComponent myId={myId} game={state} />
 

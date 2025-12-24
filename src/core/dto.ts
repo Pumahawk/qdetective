@@ -24,12 +24,14 @@ export interface OpenStateGameDto extends BaseStateGameDto<"open"> {
 }
 
 export interface FiniscedStateGameDto extends BaseStateGameDto<"finished"> {
+  winer?: string;
 }
 
 export interface PlayerDto {
   id: string;
   name: string;
   assetId: number;
+  status: "live" | "death";
 }
 
 export interface NewStatusResponseDTO {

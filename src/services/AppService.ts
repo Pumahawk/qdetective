@@ -64,6 +64,7 @@ export async function joinGame(status: {
         id: playerId,
         name: status.playerName,
         assetId: status.playerAsset,
+        status: "live",
       }],
     };
 
@@ -95,6 +96,7 @@ export async function createGame(status: {
       id: playerId,
       name: status.playerName,
       assetId: status.playerAssetId,
+      status: "live",
     }],
   };
 
@@ -452,13 +454,10 @@ export async function moveStateToAccusationOpportunity(gameId: string) {
 export async function endRount(gameId: string) {
   const game = await client.getState(gameId);
   if (game.data.state === "running") {
-    const round = game.data.round;
-    const nextPlayerIndex = (game.data.players.findIndex((p) =>
-      p.id === round.playerId
-    )! + 1) % game.data.players.length;
+    const nextPlayer = getNextPlayer(game.data).id;
     game.data.round = {
       state: "dice",
-      playerId: game.data.players[nextPlayerIndex].id,
+      playerId: nextPlayer,
     };
     client.saveOrCreateState(game.data, gameId);
   } else {
@@ -490,5 +489,38 @@ export async function makeAccusation(gameId: string, items: number[]) {
       playerId: game.data.round.playerId,
       result: win ? "win" : "lose",
     };
+  } else {
+    throw new Error("Invalid game state");
   }
+}
+
+export async function continueFromAccusationMade(gameId: string) {
+  const game = await client.getState(gameId);
+  if (
+    game.data.state === "running" && game.data.round.state === "accusation-made"
+  ) {
+    const round = game.data.round;
+    if (round.result === "win") {
+      game.data = {
+        ...game.data,
+        state: "finished",
+      };
+    } else {
+      game.data.round = {
+        state: "dice",
+        playerId: getNextPlayer(game.data).id,
+      };
+    }
+  } else {
+    throw new Error("Invalid game state");
+  }
+}
+
+function getNextPlayer(
+  game: RunningStateGameDto,
+): { index: number; id: string } {
+  const nextPlayerIndex =
+    (game.players.findIndex((p) => p.id === game.round.playerId)! + 1) %
+    game.players.length;
+  return { index: nextPlayerIndex, id: game.players[nextPlayerIndex].id };
 }
