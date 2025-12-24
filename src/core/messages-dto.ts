@@ -13,7 +13,10 @@ export interface StatusMessageDto
 
 export interface ShowItemMessage extends
   MessageBaseDto<"show-item", {
-    item?: number;
+    item?: {
+      ownerId: string;
+      itemId: number;
+    };
   }> {
   type: "show-item";
 }

@@ -385,13 +385,22 @@ export async function callItems(gameId: string, items: Targets) {
   }
 }
 
-export async function showItemToCaller(gameId: string, item?: number) {
+export async function showItemToCaller(
+  gameId: string,
+  playerId: string,
+  item?: number,
+) {
   const game = await client.getState(gameId);
   if (game.data.state === "running" && game.data.round.state === "call") {
     client.message(gameId, {
       type: "show-item",
       message: {
-        item,
+        item: item !== undefined
+          ? {
+            itemId: item,
+            ownerId: playerId,
+          }
+          : undefined,
       },
     });
   } else {

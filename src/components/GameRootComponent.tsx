@@ -17,21 +17,35 @@ import { getAllCards, getCardById } from "../core/cards.ts";
 import {
   CallStatusComponent,
   type PlayerCallInfo,
+  type ShowItemInfo,
 } from "./CallStatusComponent.tsx";
 import type {
   PlayingPlayerDto,
   ResponseFaseCallRoundState,
 } from "../core/game-dto.ts";
 import type { MessageDto } from "../core/messages-dto.ts";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export interface GameRootProps {
   playerId: string;
   gameId: string;
 }
+
 export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
   const state = useGameState(gameId, handleMessage);
-  const [showItem, setShowItem] = useState<number>();
+  const [showItem, setShowItem] = useState<ShowItemInfo>();
+  const callStatePlayers = useRef<PlayerCallInfo[]>(null);
+
+  if (
+    state && state.state === "running" &&
+    state.round.state === "call" &&
+    state.round.callState === "response-fase"
+  ) {
+    callStatePlayers.current = getCallStatePlayersFromGame(
+      state.players,
+      state.round,
+    );
+  }
 
   const boardModel = getBoardModel(state);
 
@@ -61,18 +75,26 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
   }
 
   function handleOnShowCard(item?: number) {
-    showItemToCaller(gameId, item);
+    showItemToCaller(gameId, myId, item);
   }
 
   function handleMessage(game: StateGameDto, message: MessageDto) {
-    console.log("handle message", message);
     if (
       message.type === "show-item" && game.state === "running" &&
       game.round.state === "call" &&
       game.round.callState === "response-fase" && game.round.playerId === myId
     ) {
       if (message.message.item !== undefined) {
-        setShowItem(message.message.item);
+        const ownerPlayer = game.players.find((p) =>
+          p.id === message.message.item?.ownerId
+        )!;
+        setShowItem({
+          item: message.message.item.itemId,
+          owner: {
+            name: ownerPlayer.name,
+            assetId: ownerPlayer.assetId,
+          },
+        });
       } else {
         nextCallPlayerOrEndRound(gameId);
       }
@@ -152,16 +174,12 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                     </div>
                   )}
 
-                  {state.round.state === "call" &&
-                    state.round.callState === "response-fase" &&
+                  {callStatePlayers.current &&
                     (
                       <CallStatusComponent
-                        players={getCallStatePlayersFromGame(
-                          state.players,
-                          state.round,
-                        )}
+                        players={callStatePlayers.current}
                         status="wait"
-                        itemId={showItem}
+                        item={showItem}
                         onContinue={handleOnShowCard}
                       />
                     )}

@@ -1,6 +1,14 @@
 import { getCardById } from "../core/cards.ts";
 import { ItemImg, PlayerImg } from "../core/core.tsx";
 
+export interface ShowItemInfo {
+  item: number;
+  owner: {
+    name: string;
+    assetId: number;
+  };
+}
+
 export type PlayerStatus = "waiting" | "owner" | "not-owner";
 
 export interface PlayerCallInfo {
@@ -11,16 +19,16 @@ export interface PlayerCallInfo {
 
 export interface CallStatusProps {
   status: "wait" | "ready";
-  itemId?: number;
+  item?: ShowItemInfo;
   players: PlayerCallInfo[];
 
   onContinue?: () => void;
 }
 
 export function CallStatusComponent(
-  { status, itemId, players, onContinue }: CallStatusProps,
+  { status, item, players, onContinue }: CallStatusProps,
 ) {
-  const itemInfo = itemId && getCardById(itemId);
+  const itemInfo = item && { card: getCardById(item.item), owner: item.owner };
 
   return (
     <div>
@@ -35,8 +43,10 @@ export function CallStatusComponent(
       </div>
       {itemInfo && (
         <div>
-          <ItemImg imageId={itemInfo.assetId} />
-          <div>{itemInfo.name}</div>
+          <ItemImg imageId={itemInfo.card.assetId} />
+          <PlayerImg imageId={itemInfo.owner.assetId} />
+          <div>{itemInfo.card.name}</div>
+          <div>{itemInfo.owner.name}</div>
         </div>
       )}
       <div>
