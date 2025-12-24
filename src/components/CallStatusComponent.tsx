@@ -22,11 +22,11 @@ export interface CallStatusProps {
   item?: ShowItemInfo;
   players: PlayerCallInfo[];
 
-  onContinue?: () => void;
+  onContinue?: () => void; // TODO to remove
 }
 
 export function CallStatusComponent(
-  { status, item, players, onContinue }: CallStatusProps,
+  { item, players }: CallStatusProps,
 ) {
   const itemInfo = item && { card: getCardById(item.item), owner: item.owner };
 
@@ -49,15 +49,6 @@ export function CallStatusComponent(
           <div>{itemInfo.owner.name}</div>
         </div>
       )}
-      <div>
-        <button
-          type="button"
-          disabled={status == "ready"}
-          onClick={() => onContinue && onContinue()}
-        >
-          Continue
-        </button>
-      </div>
     </div>
   );
 }
