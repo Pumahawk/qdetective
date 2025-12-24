@@ -368,11 +368,8 @@ export async function callItems(gameId: string, items: Targets) {
     game.data.state === "running" && game.data.round.state === "call" &&
     game.data.round.callState === "ask-fase"
   ) {
-    const roundPlayerId = game.data.round.playerId;
-    const callPlayerKey = (game.data.players.findIndex((p) =>
-      p.id === roundPlayerId
-    )! + 1) % game.data.players.length;
-    const callPlayerId = game.data.players[callPlayerKey].id;
+    const callPlayerKey = getNextPlayer(game.data);
+    const callPlayerId = callPlayerKey.id;
 
     game.data.round = {
       state: "call",
@@ -417,9 +414,7 @@ export async function nextCallPlayerOrEndRound(gameId: string) {
     game.data.round.callState === "response-fase"
   ) {
     const gameRound = game.data.round;
-    const roundPlayerIndex = game.data.players.findIndex((p) =>
-      p.id === gameRound.playerId
-    )!;
+    const roundPlayerIndex = getNextPlayer(game.data).index;
     const nextCallPlayerIndex = (game.data.players.findIndex((p) =>
       p.id === gameRound.callPlayerId
     )! + 1) % game.data.players.length;
@@ -504,13 +499,17 @@ export async function continueFromAccusationMade(gameId: string) {
       game.data = {
         ...game.data,
         state: "finished",
+        winer: round.playerId,
       };
     } else {
+      const round = game.data.round;
+      game.data.players.find((p) => p.id === round.playerId)!.status = "death";
       game.data.round = {
         state: "dice",
         playerId: getNextPlayer(game.data).id,
       };
     }
+    client.saveOrCreateState(game.data, gameId);
   } else {
     throw new Error("Invalid game state");
   }
