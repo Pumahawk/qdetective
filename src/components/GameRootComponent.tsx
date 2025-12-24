@@ -4,10 +4,14 @@ import type { StateGameDto } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
 import {
   callItems,
+  endRount,
+  makeAccusation,
   movePlayerIfPossible,
+  moveStateToAccusationOpportunity,
   nextCallPlayerOrEndRound,
   rollDiceFase,
   showItemToCaller,
+  startAccusation,
   startCallFase,
 } from "../services/AppService.ts";
 import { ItemSelectionComponent } from "./ItemSelectionComponent.tsx";
@@ -79,25 +83,49 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
     showItemToCaller(gameId, myId, item);
   }
 
+  function handleOnEndRound() {
+    endRount(gameId);
+  }
+
+  function handleOnStartAccusation() {
+    startAccusation(gameId);
+  }
+
+  function handleOnChoseItemAccusation(items: number[]) {
+    makeAccusation(gameId, items);
+  }
+
   function handleMessage(game: StateGameDto, message: MessageDto) {
     if (
       message.type === "show-item" && game.state === "running" &&
       game.round.state === "call" &&
-      game.round.callState === "response-fase" && game.round.playerId === myId
+      game.round.callState === "response-fase"
     ) {
       if (message.message.item !== undefined) {
         const ownerPlayer = game.players.find((p) =>
           p.id === message.message.item?.ownerId
         )!;
-        setShowItem({
-          item: message.message.item.itemId,
-          owner: {
-            name: ownerPlayer.name,
-            assetId: ownerPlayer.assetId,
-          },
-        });
+        if (game.round.playerId === myId) {
+          setShowItem({
+            item: message.message.item.itemId,
+            owner: {
+              name: ownerPlayer.name,
+              assetId: ownerPlayer.assetId,
+            },
+          });
+        } else {
+          setShowItem({
+            item: message.message.item.itemId,
+            owner: {
+              name: ownerPlayer.name,
+              assetId: ownerPlayer.assetId, // TODO set onknow asset id
+            },
+          });
+        }
+        moveStateToAccusationOpportunity(gameId);
+      } else {
+        nextCallPlayerOrEndRound(gameId);
       }
-      nextCallPlayerOrEndRound(gameId);
     }
   }
 
@@ -170,6 +198,26 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                           state.players.find((p) => p.id === myId)!.deckIds,
                         )]}
                         onConfirm={(group) => handleOnShowCard(group[0])}
+                      />
+                    </div>
+                  )}
+
+                  {state.round.state === "accusation-opportunity" && (
+                    <div>
+                      <button type="button" onClick={handleOnEndRound}>
+                        End round
+                      </button>
+                      <button type="button" onClick={handleOnStartAccusation}>
+                        Accusation
+                      </button>
+                    </div>
+                  )}
+
+                  {state.round.state == "accusation-chose" && (
+                    <div>
+                      <ItemSelectionComponent
+                        itemGroups={[]}
+                        onConfirm={handleOnChoseItemAccusation}
                       />
                     </div>
                   )}

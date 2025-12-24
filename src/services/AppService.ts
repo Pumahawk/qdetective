@@ -424,10 +424,8 @@ export async function nextCallPlayerOrEndRound(gameId: string) {
 
     if (roundPlayerIndex === nextCallPlayerIndex) {
       game.data.round = {
-        playerId:
-          game.data.players[(roundPlayerIndex + 1) % game.data.players.length]
-            .id,
-        state: "dice",
+        state: "accusation-opportunity",
+        playerId: game.data.round.playerId,
       };
     } else {
       game.data.round.callPlayerId = game.data.players[nextCallPlayerIndex].id;
@@ -435,5 +433,62 @@ export async function nextCallPlayerOrEndRound(gameId: string) {
     client.saveOrCreateState(game.data, gameId);
   } else {
     throw new Error("Invalid game state");
+  }
+}
+
+export async function moveStateToAccusationOpportunity(gameId: string) {
+  const game = await client.getState(gameId);
+  if (game.data.state === "running" && game.data.round.state === "call") {
+    game.data.round = {
+      state: "accusation-opportunity",
+      playerId: game.data.round.playerId,
+    };
+    await client.saveOrCreateState(game.data, gameId);
+  } else {
+    throw new Error("Invalid state");
+  }
+}
+
+export async function endRount(gameId: string) {
+  const game = await client.getState(gameId);
+  if (game.data.state === "running") {
+    const round = game.data.round;
+    const nextPlayerIndex = (game.data.players.findIndex((p) =>
+      p.id === round.playerId
+    )! + 1) % game.data.players.length;
+    game.data.round = {
+      state: "dice",
+      playerId: game.data.players[nextPlayerIndex].id,
+    };
+    client.saveOrCreateState(game.data, gameId);
+  } else {
+    throw new Error("Invalid game state");
+  }
+}
+
+export async function startAccusation(gameId: string) {
+  const game = await client.getState(gameId);
+  if (game.data.state === "running") {
+    game.data.round = {
+      state: "accusation-chose",
+      playerId: game.data.round.playerId,
+    };
+    client.saveOrCreateState(game.data, gameId);
+  }
+}
+
+export async function makeAccusation(gameId: string, items: number[]) {
+  const game = await client.getState(gameId);
+  if (
+    game.data.state === "running" &&
+    game.data.round.state === "accusation-chose"
+  ) {
+    const targets = game.data.targets;
+    const win = items.reduce((b, item) => b && targets.includes(item), true);
+    game.data.round = {
+      state: "accusation-made",
+      playerId: game.data.round.playerId,
+      result: win ? "win" : "lose",
+    };
   }
 }

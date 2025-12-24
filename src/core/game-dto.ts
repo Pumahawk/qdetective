@@ -4,7 +4,10 @@ export type RoundState =
   | DiceRoundState
   | MoveRoundState
   | AskFaseCallRoundState
-  | ResponseFaseCallRoundState;
+  | ResponseFaseCallRoundState
+  | AccusationChoseState
+  | AccusationMadeState
+  | AccusationOpportunityState;
 
 export interface PlayingPlayerDto extends PlayerDto {
   deckIds: number[];
@@ -34,6 +37,17 @@ export interface MoveRoundState extends RoundBase<"move"> {
 
 interface CallRoundState<T> extends RoundBase<"call"> {
   callState: T;
+}
+
+export interface AccusationOpportunityState
+  extends RoundBase<"accusation-opportunity"> {
+}
+
+export interface AccusationChoseState extends RoundBase<"accusation-chose"> {
+}
+
+export interface AccusationMadeState extends RoundBase<"accusation-made"> {
+  result: "win" | "lose";
 }
 
 export interface AskFaseCallRoundState extends CallRoundState<"ask-fase"> {
