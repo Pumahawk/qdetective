@@ -1,3 +1,5 @@
+import type { Card, CardType } from "./cards.ts";
+
 const diceAssetSize = 51;
 const playerAssetSize = 16;
 const scale = 3;
@@ -49,6 +51,21 @@ export function PlayerImg({ imageId }: { imageId: number }) {
       />
     </div>
   );
+}
+
+export function RoomImg({ imageId }: { imageId: number }) {
+  // TODO create room img
+  return <PlayerImg imageId={imageId} />;
+}
+
+export function CardImg(
+  { type, assetId }: { type: CardType; assetId: number },
+) {
+  return type === "item"
+    ? <ItemImg imageId={assetId} />
+    : type === "room"
+    ? <RoomImg imageId={assetId} />
+    : <PlayerImg imageId={assetId} />;
 }
 
 function getDiceBkPos(pos: number): string {

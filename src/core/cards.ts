@@ -1,6 +1,6 @@
 import type { Targets } from "./dto.ts";
 
-type CardType = "item" | "room" | "person";
+export type CardType = "item" | "room" | "person";
 
 interface CardBase {
   type: CardType;

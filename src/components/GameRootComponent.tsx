@@ -1,5 +1,5 @@
 import { type BoardModel } from "../core/board-core.ts";
-import { PlayerImg } from "../core/core.tsx";
+import { CardImg, PlayerImg } from "../core/core.tsx";
 import type { StateGameDto } from "../core/dto.ts";
 import { useGameState } from "../hooks/game.ts";
 import {
@@ -22,6 +22,7 @@ import {
 import type {
   PlayingPlayerDto,
   ResponseFaseCallRoundState,
+  RunningStateGameDto,
 } from "../core/game-dto.ts";
 import type { MessageDto } from "../core/messages-dto.ts";
 import { useRef, useState } from "react";
@@ -183,6 +184,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                       />
                     )}
                 </div>
+                <MyDeckComponent myId={myId} game={state} />
 
                 <BoardComponent
                   model={boardModel}
@@ -267,4 +269,32 @@ function getCallStatePlayersFromGame(
       ? "waiting"
       : "waiting",
   }));
+}
+
+function MyDeckComponent(
+  { myId, game }: { myId: string; game: RunningStateGameDto },
+) {
+  const deck = game.players.find((p) => p.id === myId)?.deckIds!;
+  const group = getItemGroups(deck);
+  return (
+    <div>
+      {group.map((g, i) => (
+        <div key={i}>
+          {g.map(getCardById).map((card) => (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              key={card.id}
+            >
+              <CardImg type={card.type} assetId={card.assetId} />
+              <label>{card.name}</label>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 }
