@@ -368,7 +368,7 @@ export async function callItems(gameId: string, items: Targets) {
     game.data.state === "running" && game.data.round.state === "call" &&
     game.data.round.callState === "ask-fase"
   ) {
-    const callPlayerKey = getNextPlayer(game.data)!;
+    const callPlayerKey = getNextPlayer(game.data);
     const callPlayerId = callPlayerKey.id;
 
     game.data.round = {
@@ -414,7 +414,9 @@ export async function nextCallPlayerOrEndRound(gameId: string) {
     game.data.round.callState === "response-fase"
   ) {
     const gameRound = game.data.round;
-    const roundPlayerIndex = getNextPlayer(game.data)!.index;
+    const roundPlayerIndex = game.data.players.findIndex((p) =>
+      p.id === gameRound.playerId
+    );
     const nextCallPlayerIndex = (game.data.players.findIndex((p) =>
       p.id === gameRound.callPlayerId
     )! + 1) % game.data.players.length;
@@ -449,7 +451,7 @@ export async function moveStateToAccusationOpportunity(gameId: string) {
 export async function endRount(gameId: string) {
   const game = await client.getState(gameId);
   if (game.data.state === "running") {
-    const nextPlayer = getNextPlayer(game.data)!.id;
+    const nextPlayer = getNextLivePlayer(game.data)!.id;
     game.data.round = {
       state: "dice",
       playerId: nextPlayer,
@@ -484,6 +486,7 @@ export async function makeAccusation(gameId: string, items: number[]) {
       playerId: game.data.round.playerId,
       result: win ? "win" : "lose",
     };
+    client.saveOrCreateState(game.data, gameId);
   } else {
     throw new Error("Invalid game state");
   }
@@ -503,7 +506,7 @@ export async function continueFromAccusationMade(gameId: string) {
       };
     } else {
       const round = game.data.round;
-      const nextPlayer = getNextPlayer(game.data);
+      const nextPlayer = getNextLivePlayer(game.data);
       if (nextPlayer) {
         game.data.players.find((p) => p.id === round.playerId)!.status =
           "death";
@@ -526,6 +529,18 @@ export async function continueFromAccusationMade(gameId: string) {
 }
 
 function getNextPlayer(
+  game: RunningStateGameDto,
+): { index: number; id: string } {
+  const playerId = game.round.playerId;
+  const index = (game.players.findIndex((p) => p.id === playerId)! + 1) %
+    game.players.length;
+  return {
+    index,
+    id: game.players[index].id,
+  };
+}
+
+function getNextLivePlayer(
   game: RunningStateGameDto,
 ): { index: number; id: string } | undefined {
   const players = game.players.map((p, i) => ({ player: p, index: i })).filter(

@@ -190,40 +190,41 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                           )}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {state.round.state === "call" &&
-                    state.round.callState === "response-fase" &&
-                    state.round.callPlayerId === myId && (
-                    <div>
-                      <ItemSelectionComponent
-                        itemGroups={[getCommonItemGroups(
-                          state.round.items,
-                          state.players.find((p) => p.id === myId)!.deckIds,
-                        )]}
-                        onConfirm={(group) => handleOnShowCard(group[0])}
-                      />
-                    </div>
-                  )}
+                      {state.round.state === "accusation-opportunity" && (
+                        <div>
+                          <button type="button" onClick={handleOnEndRound}>
+                            End round
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleOnStartAccusation}
+                          >
+                            Accusation
+                          </button>
+                        </div>
+                      )}
 
-                  {state.round.state === "accusation-opportunity" && (
-                    <div>
-                      <button type="button" onClick={handleOnEndRound}>
-                        End round
-                      </button>
-                      <button type="button" onClick={handleOnStartAccusation}>
-                        Accusation
-                      </button>
-                    </div>
-                  )}
+                      {state.round.state == "accusation-chose" && (
+                        <div>
+                          <ItemSelectionComponent
+                            itemGroups={getAllItemGroups()}
+                            onConfirm={handleOnChoseItemAccusation}
+                          />
+                        </div>
+                      )}
 
-                  {state.round.state == "accusation-chose" && (
-                    <div>
-                      <ItemSelectionComponent
-                        itemGroups={[]}
-                        onConfirm={handleOnChoseItemAccusation}
-                      />
+                      {state.round.state === "accusation-made" && (
+                        <div>
+                          {state.round.result}
+                          <button
+                            type="button"
+                            onClick={handleContinueFromAccusationMade}
+                          >
+                            Continue
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -237,12 +238,17 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                       />
                     )}
 
-                  {state.round.state === "accusation-made" && (
+                  {state.round.state === "call" &&
+                    state.round.callState === "response-fase" &&
+                    state.round.callPlayerId === myId && (
                     <div>
-                      {state.round.result}
-                      <button onClick={handleContinueFromAccusationMade}>
-                        Continue
-                      </button>
+                      <ItemSelectionComponent
+                        itemGroups={[getCommonItemGroups(
+                          state.round.items,
+                          state.players.find((p) => p.id === myId)!.deckIds,
+                        )]}
+                        onConfirm={(group) => handleOnShowCard(group[0])}
+                      />
                     </div>
                   )}
                 </div>
