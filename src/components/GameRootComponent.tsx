@@ -64,12 +64,12 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
     showItemToCaller(gameId, item);
   }
 
-  function handleMessage(message: MessageDto) {
+  function handleMessage(game: StateGameDto, message: MessageDto) {
     console.log("handle message", message);
     if (
-      message.type === "show-item" && state?.state === "running" &&
-      state.round.state === "call" &&
-      state.round.callState === "response-fase" && state.round.playerId === myId
+      message.type === "show-item" && game.state === "running" &&
+      game.round.state === "call" &&
+      game.round.callState === "response-fase" && game.round.playerId === myId
     ) {
       if (message.message.item !== undefined) {
         setShowItem(message.message.item);
@@ -161,6 +161,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                           state.round,
                         )}
                         status="wait"
+                        itemId={showItem}
                         onContinue={handleOnShowCard}
                       />
                     )}
