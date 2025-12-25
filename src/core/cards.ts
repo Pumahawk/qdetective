@@ -19,15 +19,87 @@ export interface RoomCard extends CardBase<"room"> {
 }
 
 const rooms: RoomCard[] = [
-  { type: "room", assetId: 0, name: "Cucina", doors: [] },
-  { type: "room", assetId: 0, name: "Sala da ballo", doors: [] },
-  { type: "room", assetId: 0, name: "Serra", doors: [] },
-  { type: "room", assetId: 0, name: "Sala da pranzo", doors: [] },
-  { type: "room", assetId: 0, name: "Sala da biliardo", doors: [] },
-  { type: "room", assetId: 0, name: "Biblioteca", doors: [] },
-  { type: "room", assetId: 0, name: "Ingresso", doors: [[16, 5]] },
-  { type: "room", assetId: 0, name: "Studio", doors: [] },
-  { type: "room", assetId: 0, name: "Camera da letto", doors: [] },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Cucina",
+    doors: [
+      [6, 19],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Serra",
+    doors: [
+      [18, 9],
+      [23, 11],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Sala da pranzo",
+    doors: [
+      [7, 12],
+      [6, 15],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Sala da biliardo",
+    doors: [
+      [17, 15],
+      [21, 13],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Biblioteca",
+    doors: [
+      [5, 6],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Ingresso",
+    doors: [
+      [8, 5],
+      [9, 6],
+      [15, 6],
+      [16, 5],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Studio",
+    doors: [
+      [20, 5],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Camera da letto",
+    doors: [
+      [5, 6],
+    ],
+  },
+  {
+    type: "room",
+    assetId: 0,
+    name: "Soggiorno",
+    doors: [
+      [11, 18],
+      [12, 18],
+      [13, 18],
+      [15, 19],
+    ],
+  },
 ];
 
 const cards: CardT[] = [
