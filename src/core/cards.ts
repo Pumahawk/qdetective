@@ -1,18 +1,36 @@
 import type { Targets } from "./dto.ts";
 
-export type CardType = "item" | "room" | "person";
+export type CardType = "item" | "person";
 
-interface CardBase {
-  type: CardType;
+type CardT = CardBase<CardType> | RoomCard;
+
+interface CardBase<T> {
+  type: T;
   assetId: number;
   name: string;
 }
 
-export interface Card extends CardBase {
+export interface Card extends CardBase<CardType | "room"> {
   id: number;
 }
 
-const cards: CardBase[] = [
+export interface RoomCard extends CardBase<"room"> {
+  doors: [number, number][];
+}
+
+const rooms: RoomCard[] = [
+  { type: "room", assetId: 0, name: "Cucina", doors: [] },
+  { type: "room", assetId: 0, name: "Sala da ballo", doors: [] },
+  { type: "room", assetId: 0, name: "Serra", doors: [] },
+  { type: "room", assetId: 0, name: "Sala da pranzo", doors: [] },
+  { type: "room", assetId: 0, name: "Sala da biliardo", doors: [] },
+  { type: "room", assetId: 0, name: "Biblioteca", doors: [] },
+  { type: "room", assetId: 0, name: "Ingresso", doors: [[16, 5]] },
+  { type: "room", assetId: 0, name: "Studio", doors: [] },
+  { type: "room", assetId: 0, name: "Camera da letto", doors: [] },
+];
+
+const cards: CardT[] = [
   { type: "item", assetId: 0, name: "La corda" },
   { type: "item", assetId: 0, name: "Il tubo di piombo" },
   { type: "item", assetId: 0, name: "Il pugnale" },
@@ -27,15 +45,7 @@ const cards: CardBase[] = [
   { type: "person", assetId: 0, name: "Mrs. Peacock" },
   { type: "person", assetId: 0, name: "Professor Plum" },
 
-  { type: "room", assetId: 0, name: "Cucina" },
-  { type: "room", assetId: 0, name: "Sala da ballo" },
-  { type: "room", assetId: 0, name: "Serra" },
-  { type: "room", assetId: 0, name: "Sala da pranzo" },
-  { type: "room", assetId: 0, name: "Sala da biliardo" },
-  { type: "room", assetId: 0, name: "Biblioteca" },
-  { type: "room", assetId: 0, name: "Ingresso" },
-  { type: "room", assetId: 0, name: "Studio" },
-  { type: "room", assetId: 0, name: "Camera da letto" },
+  ...rooms,
 ];
 
 export type Deck = number[];
@@ -95,4 +105,12 @@ function shuffle<T>(list: T[]): T[] {
     [res[i], res[rand]] = [res[rand], res[i]];
   }
   return res;
+}
+
+export function findRoomByPosition(x: number, y: number): RoomCard | undefined {
+  return cards.find((c) =>
+    c.type === "room" && c.doors.find(([xp, yp]) => xp === x && yp === y)
+  ) as
+    | RoomCard
+    | undefined;
 }

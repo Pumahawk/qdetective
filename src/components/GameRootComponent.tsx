@@ -18,7 +18,7 @@ import {
 import { ItemSelectionComponent } from "./ItemSelectionComponent.tsx";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
-import { getAllCards, getCardById } from "../core/cards.ts";
+import { findRoomByPosition, getAllCards, getCardById } from "../core/cards.ts";
 import {
   CallStatusComponent,
   type PlayerCallInfo,
@@ -64,6 +64,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
   }
 
   function handleClickOnBoard(x: number, y: number) {
+    console.log("Click on board", x, y);
     if (
       state?.state === "running" && state.round.state === "move" &&
       state.round.playerId === myId
@@ -169,7 +170,15 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                 <div>
                   {state.round.playerId === myId && (
                     <div>
-                      {state.round.state === "move" && state.round.step === 0 &&
+                      {state.round.state === "move" &&
+                        (
+                          <button type="button" onClick={handleOnEndRound}>
+                            End round
+                          </button>
+                        )}
+
+                      {state.round.state === "move" &&
+                        isPlayerInRoom(state) &&
                         (
                           <div>
                             <button type="button" onClick={handleStartCallFase}>
@@ -193,9 +202,6 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
                       {state.round.state === "accusation-opportunity" && (
                         <div>
-                          <button type="button" onClick={handleOnEndRound}>
-                            End round
-                          </button>
                           <button
                             type="button"
                             onClick={handleOnStartAccusation}
@@ -365,4 +371,10 @@ function MyDeckComponent(
       ))}
     </div>
   );
+}
+
+function isPlayerInRoom(game: RunningStateGameDto): boolean {
+  const [x, y] =
+    game.players.find((p) => p.id === game.round.playerId)!.position;
+  return !!findRoomByPosition(x, y);
 }

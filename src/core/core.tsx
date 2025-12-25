@@ -59,7 +59,7 @@ export function RoomImg({ imageId }: { imageId: number }) {
 }
 
 export function CardImg(
-  { type, assetId }: { type: CardType; assetId: number },
+  { type, assetId }: { type: CardType | "room"; assetId: number },
 ) {
   return type === "item"
     ? <ItemImg imageId={assetId} />
