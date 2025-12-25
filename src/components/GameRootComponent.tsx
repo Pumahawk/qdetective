@@ -18,7 +18,13 @@ import {
 import { ItemSelectionComponent } from "./ItemSelectionComponent.tsx";
 import { BoardComponent } from "./BoardComponent.tsx";
 import { DiceRollComponent } from "./DiceRollComponent.tsx";
-import { findRoomByPosition, getAllCards, getCardById } from "../core/cards.ts";
+import {
+  type Card,
+  type CardType,
+  findRoomByPosition,
+  getAllCards,
+  getCardById,
+} from "../core/cards.ts";
 import {
   CallStatusComponent,
   type PlayerCallInfo,
@@ -170,7 +176,8 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                 <div>
                   {state.round.playerId === myId && (
                     <div>
-                      {state.round.state === "move" &&
+                      {(state.round.state === "move" ||
+                        state.round.state === "accusation-opportunity") &&
                         (
                           <button type="button" onClick={handleOnEndRound}>
                             End round
@@ -178,7 +185,7 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                         )}
 
                       {state.round.state === "move" &&
-                        isPlayerInRoom(state) &&
+                        !!getPlayerRoom(state) &&
                         (
                           <div>
                             <button type="button" onClick={handleStartCallFase}>
@@ -192,7 +199,10 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
                           {state.round.callState === "ask-fase" && (
                             <div>
                               <ItemSelectionComponent
-                                itemGroups={getAllItemGroups()}
+                                itemGroups={[
+                                  [getPlayerRoom(state)!.id],
+                                  ...getItemGroupsFromType(["item", "person"]),
+                                ]}
                                 onConfirm={handleOnCallConfirm}
                               />
                             </div>
@@ -307,6 +317,12 @@ function getItemGroups(items: number[]): number[][] {
   return groups;
 }
 
+function getItemGroupsFromType(type: (CardType | "room")[]): number[][] {
+  return type.map((t) =>
+    getAllCards().filter((c) => c.type === t).map((c) => c.id)
+  );
+}
+
 function getAllItemGroups(): number[][] {
   const groups: number[][] = [[], [], []];
   getAllCards().forEach((c) => groupItems(c, groups));
@@ -373,8 +389,8 @@ function MyDeckComponent(
   );
 }
 
-function isPlayerInRoom(game: RunningStateGameDto): boolean {
+function getPlayerRoom(game: RunningStateGameDto): Card | undefined {
   const [x, y] =
     game.players.find((p) => p.id === game.round.playerId)!.position;
-  return !!findRoomByPosition(x, y);
+  return findRoomByPosition(x, y);
 }

@@ -107,10 +107,9 @@ function shuffle<T>(list: T[]): T[] {
   return res;
 }
 
-export function findRoomByPosition(x: number, y: number): RoomCard | undefined {
-  return cards.find((c) =>
-    c.type === "room" && c.doors.find(([xp, yp]) => xp === x && yp === y)
-  ) as
-    | RoomCard
-    | undefined;
+export function findRoomByPosition(x: number, y: number): Card | undefined {
+  return getAllCards().find((c) =>
+    c.type === "room" &&
+    (c as RoomCard).doors.find(([xp, yp]) => xp === x && yp === y)
+  );
 }
