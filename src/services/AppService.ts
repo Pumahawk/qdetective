@@ -451,7 +451,8 @@ export async function moveStateToAccusationOpportunity(gameId: string) {
 export async function endRount(gameId: string) {
   const game = await client.getState(gameId);
   if (game.data.state === "running") {
-    const nextPlayer = getNextLivePlayer(game.data)!.id;
+    const nextPlayer = getNextLivePlayer(game.data)?.id ??
+      game.data.round.playerId;
     game.data.round = {
       state: "dice",
       playerId: nextPlayer,
