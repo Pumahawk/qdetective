@@ -15,13 +15,13 @@ export function ItemImg({ imageId }: { imageId: number }) {
     >
       <div
         style={{
-          width: `${playerAssetSize}px`,
-          height: `${playerAssetSize}px`,
+          width: `${16}px`,
+          height: `${16}px`,
           transform: `scale(${scale})`,
           transformOrigin: `top left`,
-          backgroundImage: `url("/qdetective/players.png")`,
-          backgroundSize: `48px 48px`,
-          backgroundPosition: getBkPos(imageId),
+          backgroundImage: `url("/qdetective/items.png")`,
+          backgroundSize: `${16 * 13}px ${16 * 14}px`,
+          backgroundPosition: getBkItemsPos(imageId),
           imageRendering: `pixelated`,
         }}
       />
@@ -55,7 +55,27 @@ export function PlayerImg({ imageId }: { imageId: number }) {
 
 export function RoomImg({ imageId }: { imageId: number }) {
   // TODO create room img
-  return <PlayerImg imageId={imageId} />;
+  return (
+    <div
+      style={{
+        width: `100px`,
+        height: `100px`,
+      }}
+    >
+      <div
+        style={{
+          width: `100px`,
+          height: `100px`,
+          // transform: `scale(${scale})`,
+          transformOrigin: `top left`,
+          backgroundImage: `url("/qdetective/rooms.png")`,
+          backgroundSize: `300px 400px`,
+          backgroundPosition: getBkRoomPos(imageId),
+          imageRendering: `pixelated`,
+        }}
+      />
+    </div>
+  );
 }
 
 export function CardImg(
@@ -72,6 +92,18 @@ function getDiceBkPos(pos: number): string {
   pos--;
   const col = pos % 6;
   return `${-col * diceAssetSize}px 0px`;
+}
+
+function getBkRoomPos(pos: number): string {
+  const col = pos % 3;
+  const row = Math.floor(pos / 3);
+  return `${-col * 100}px ${-row * 100}px`;
+}
+
+function getBkItemsPos(pos: number): string {
+  const col = pos % 13;
+  const row = Math.floor(pos / 14);
+  return `${-col * 16}px ${-row * 16}px`;
 }
 
 function getBkPos(pos: number): string {

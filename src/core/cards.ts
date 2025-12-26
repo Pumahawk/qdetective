@@ -24,7 +24,7 @@ export interface RoomCard extends CardBase<"room"> {
 const rooms: RoomCard[] = [
   {
     type: "room",
-    assetId: 0,
+    assetId: 3,
     name: "Cucina",
     doors: [
       [6, 19],
@@ -32,7 +32,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 7,
     name: "Serra",
     doors: [
       [18, 9],
@@ -41,7 +41,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 2,
     name: "Sala da pranzo",
     doors: [
       [7, 12],
@@ -50,7 +50,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 5,
     name: "Sala da biliardo",
     doors: [
       [17, 15],
@@ -59,7 +59,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 1,
     name: "Biblioteca",
     doors: [
       [5, 6],
@@ -67,7 +67,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 6,
     name: "Ingresso",
     doors: [
       [8, 5],
@@ -78,7 +78,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 4,
     name: "Studio",
     doors: [
       [20, 5],
@@ -86,7 +86,7 @@ const rooms: RoomCard[] = [
   },
   {
     type: "room",
-    assetId: 0,
+    assetId: 8,
     name: "Camera da letto",
     doors: [
       [5, 6],
@@ -106,19 +106,19 @@ const rooms: RoomCard[] = [
 ];
 
 const cards: CardT[] = [
-  { type: "item", assetId: 0, name: "La corda" },
-  { type: "item", assetId: 0, name: "Il tubo di piombo" },
-  { type: "item", assetId: 0, name: "Il pugnale" },
-  { type: "item", assetId: 0, name: "Veleno" },
-  { type: "item", assetId: 0, name: "Mattone" },
-  { type: "item", assetId: 0, name: "Arco" },
+  { type: "item", assetId: 13 * 7 + 3, name: "La corda" },
+  { type: "item", assetId: 13 * 12 + 0, name: "Il tubo di piombo" },
+  { type: "item", assetId: 13 * 8 + 0, name: "Il pugnale" },
+  { type: "item", assetId: 13 * 4 + 10, name: "Veleno" },
+  { type: "item", assetId: 13 * 6 + 0, name: "Mattone" },
+  { type: "item", assetId: 13 * 9 + 11, name: "Arco" },
 
   { type: "person", assetId: 0, name: "Miss Scarlett" },
-  { type: "person", assetId: 0, name: "Colonel Mustard" },
-  { type: "person", assetId: 0, name: "Mrs. White" },
-  { type: "person", assetId: 0, name: "Reverend Green" },
-  { type: "person", assetId: 0, name: "Mrs. Peacock" },
-  { type: "person", assetId: 0, name: "Professor Plum" },
+  { type: "person", assetId: 1, name: "Colonel Mustard" },
+  { type: "person", assetId: 2, name: "Mrs. White" },
+  { type: "person", assetId: 3, name: "Reverend Green" },
+  { type: "person", assetId: 4, name: "Mrs. Peacock" },
+  { type: "person", assetId: 5, name: "Professor Plum" },
 
   ...rooms,
 ];
