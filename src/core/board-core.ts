@@ -54,9 +54,9 @@ export class BoardComponentImpl {
   async connectedCallback() {
     const assetLoader = new AssetLoader();
     this.assetManager = new AssetManager(this.ctx, {
-      assets: assetLoader.load("/assets.png"),
-      rooms: assetLoader.load("/rooms.png"),
-      players: assetLoader.load("/players.png"),
+      assets: assetLoader.load("/qdetective/assets.png"),
+      rooms: assetLoader.load("/qdetective/rooms.png"),
+      players: assetLoader.load("/qdetective/players.png"),
     });
 
     await Promise.all(assetLoader.getImages().map((img) => img.decode()));
