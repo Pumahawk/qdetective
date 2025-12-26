@@ -1,8 +1,6 @@
 import type { Targets } from "./dto.ts";
 
-export type CardType = "item" | "person";
-
-type CardT = CardBase<CardType> | RoomCard;
+export type CardType = "item" | "person" | "room";
 
 interface CardBase<T> {
   type: T;
@@ -10,8 +8,13 @@ interface CardBase<T> {
   name: string;
 }
 
-export interface Card extends CardBase<CardType | "room"> {
-  id: number;
+type CardT = RoomCard | ItemCard | PersonCard;
+export type Card = CardT & { id: number };
+
+export interface ItemCard extends CardBase<"item"> {
+}
+
+export interface PersonCard extends CardBase<"person"> {
 }
 
 export interface RoomCard extends CardBase<"room"> {
@@ -159,7 +162,7 @@ export function prepareStartingDeckGameState(
 export function getCardById(id: number): Card {
   return {
     ...cards[id],
-    id: id,
+    id,
   };
 }
 

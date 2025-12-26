@@ -304,7 +304,7 @@ function getBoardModel(state?: StateGameDto): BoardModel | undefined {
 }
 
 function groupItems(
-  card: { type: "item" | "room" | "person"; id: number },
+  card: { type: CardType; id: number },
   groups: number[][],
 ): number[][] {
   groups[card.type === "item" ? 0 : card.type === "room" ? 1 : 2].push(card.id);
@@ -317,7 +317,7 @@ function getItemGroups(items: number[]): number[][] {
   return groups;
 }
 
-function getItemGroupsFromType(type: (CardType | "room")[]): number[][] {
+function getItemGroupsFromType(type: CardType[]): number[][] {
   return type.map((t) =>
     getAllCards().filter((c) => c.type === t).map((c) => c.id)
   );
