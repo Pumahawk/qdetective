@@ -143,137 +143,168 @@ export function GameRootComponent({ playerId: myId, gameId }: GameRootProps) {
 
   return (
     <div>
-      {me && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <PlayerImg imageId={me.assetId} />
-          </div>
-        </div>
-      )}
-
       {state
         ? (
           state.state === "running"
             ? (
-              <div>
-                {(state.round.state === "dice" ||
-                  state.round.state === "move") && (
-                  <DiceRollComponent
-                    actions={state.round.playerId === myId}
-                    dice={state.round.state === "move"
-                      ? state.round.dice
-                      : undefined}
-                    onRoll={handleRollDice}
-                  />
-                )}
+              <div
+                style={{
+                  position: "absolute",
+                  top: "0px",
+                  bottom: "0px",
+                  right: "0px",
+                  left: "0px",
 
-                <div>
-                  {state.round.playerId === myId && (
-                    <div>
-                      {(state.round.state === "move" ||
-                        state.round.state === "accusation-opportunity") &&
-                        (
-                          <button type="button" onClick={handleOnEndRound}>
-                            End round
-                          </button>
+                  display: "flex",
+
+                  flexWrap: "wrap",
+
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "100cqh",
+                    maxHeight: "100cqw",
+                  }}
+                >
+                  <BoardComponent
+                    model={boardModel}
+                    onBoardClick={handleClickOnBoard}
+                  />
+                </div>
+                <div
+                  style={{}}
+                >
+                  {(state.round.state === "dice" ||
+                    state.round.state === "move") && (
+                    <DiceRollComponent
+                      actions={state.round.playerId === myId}
+                      dice={state.round.state === "move"
+                        ? state.round.dice
+                        : undefined}
+                      onRoll={handleRollDice}
+                    />
+                  )}
+
+                  <div>
+                    {state.round.playerId === myId && (
+                      <div>
+                        {(state.round.state === "move" ||
+                          state.round.state === "accusation-opportunity") &&
+                          (
+                            <button type="button" onClick={handleOnEndRound}>
+                              End round
+                            </button>
+                          )}
+
+                        {state.round.state === "move" &&
+                          !!getPlayerRoom(state) &&
+                          (
+                            <div>
+                              <button
+                                type="button"
+                                onClick={handleStartCallFase}
+                              >
+                                Call
+                              </button>
+                            </div>
+                          )}
+
+                        {state.round.state === "call" && (
+                          <div>
+                            {state.round.callState === "ask-fase" && (
+                              <div>
+                                <ItemSelectionComponent
+                                  itemGroups={[
+                                    [getPlayerRoom(state)!.id],
+                                    ...getItemGroupsFromType([
+                                      "item",
+                                      "person",
+                                    ]),
+                                  ]}
+                                  onConfirm={handleOnCallConfirm}
+                                />
+                              </div>
+                            )}
+                          </div>
                         )}
 
-                      {state.round.state === "move" &&
-                        !!getPlayerRoom(state) &&
-                        (
+                        {state.round.state === "accusation-opportunity" && (
                           <div>
-                            <button type="button" onClick={handleStartCallFase}>
-                              Call
+                            <button
+                              type="button"
+                              onClick={handleOnStartAccusation}
+                            >
+                              Accusation
                             </button>
                           </div>
                         )}
 
-                      {state.round.state === "call" && (
-                        <div>
-                          {state.round.callState === "ask-fase" && (
-                            <div>
-                              <ItemSelectionComponent
-                                itemGroups={[
-                                  [getPlayerRoom(state)!.id],
-                                  ...getItemGroupsFromType(["item", "person"]),
-                                ]}
-                                onConfirm={handleOnCallConfirm}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
+                        {state.round.state == "accusation-chose" && (
+                          <div>
+                            <ItemSelectionComponent
+                              itemGroups={getAllItemGroups()}
+                              onConfirm={handleOnChoseItemAccusation}
+                            />
+                          </div>
+                        )}
 
-                      {state.round.state === "accusation-opportunity" && (
-                        <div>
-                          <button
-                            type="button"
-                            onClick={handleOnStartAccusation}
-                          >
-                            Accusation
-                          </button>
-                        </div>
-                      )}
-
-                      {state.round.state == "accusation-chose" && (
-                        <div>
-                          <ItemSelectionComponent
-                            itemGroups={getAllItemGroups()}
-                            onConfirm={handleOnChoseItemAccusation}
-                          />
-                        </div>
-                      )}
-
-                      {state.round.state === "accusation-made" && (
-                        <div>
-                          {state.round.result}
-                          <button
-                            type="button"
-                            onClick={handleContinueFromAccusationMade}
-                          >
-                            Continue
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {callStatePlayers.current &&
-                    (
-                      <CallStatusComponent
-                        players={callStatePlayers.current}
-                        status="wait"
-                        item={showItem}
-                        onContinue={handleOnShowCard}
-                      />
+                        {state.round.state === "accusation-made" && (
+                          <div>
+                            {state.round.result}
+                            <button
+                              type="button"
+                              onClick={handleContinueFromAccusationMade}
+                            >
+                              Continue
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
 
-                  {state.round.state === "call" &&
-                    state.round.callState === "response-fase" &&
-                    state.round.callPlayerId === myId && (
-                    <div>
-                      <ItemSelectionComponent
-                        itemGroups={[getCommonItemGroups(
-                          state.round.items,
-                          state.players.find((p) => p.id === myId)!.deckIds,
-                        )]}
-                        onConfirm={(group) => handleOnShowCard(group[0])}
-                      />
+                    {callStatePlayers.current &&
+                      (
+                        <CallStatusComponent
+                          players={callStatePlayers.current}
+                          status="wait"
+                          item={showItem}
+                          onContinue={handleOnShowCard}
+                        />
+                      )}
+
+                    {state.round.state === "call" &&
+                      state.round.callState === "response-fase" &&
+                      state.round.callPlayerId === myId && (
+                      <div>
+                        <ItemSelectionComponent
+                          itemGroups={[getCommonItemGroups(
+                            state.round.items,
+                            state.players.find((p) => p.id === myId)!.deckIds,
+                          )]}
+                          onConfirm={(group) => handleOnShowCard(group[0])}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <MyDeckComponent myId={myId} game={state} />
+
+                  {me && (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <PlayerImg imageId={me.assetId} />
+                      </div>
                     </div>
                   )}
                 </div>
-                <MyDeckComponent myId={myId} game={state} />
-
-                <BoardComponent
-                  model={boardModel}
-                  onBoardClick={handleClickOnBoard}
-                />
               </div>
             )
             : <div>Game not running.</div>

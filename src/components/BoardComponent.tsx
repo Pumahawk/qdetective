@@ -41,8 +41,8 @@ export function BoardComponent({ model, onBoardClick }: BoardProps) {
         width={25 * 16}
         height={25 * 16}
         style={{
-          width: "1000px",
-          height: "1000px",
+          width: "100%",
+          height: "100%",
           imageRendering: "pixelated",
         }}
       >
